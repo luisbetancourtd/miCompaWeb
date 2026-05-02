@@ -71,6 +71,7 @@ def main(
         console.print("\n[cyan]Comandos disponibles:[/]")
         console.print("  [bold]m1[/]               — Pipeline de prospeccion")
         console.print("  [bold]wizard[/]           — Asistente interactivo")
+        console.print("  [bold]setup[/]            — Configurar API keys (primer uso)")
         console.print("  [bold]doctor[/]           — Diagnostico del entorno")
         console.print("  [bold]projects[/]         — Gestionar proyectos")
         console.print("  [bold]export[/]           — Exportar a HTML/CSV/JSON")
@@ -1002,6 +1003,17 @@ def configure_niche(
     console.print(table)
     console.print(f"\n[dim]Total: {len(all_niches)} nichos ({len(custom_niches)} personalizados)[/]")
     console.print("[dim]Tip: Usa [cyan]--add nombre::Nombre Bonito::categoria[/] para añadir.[/]")
+
+
+# ──────────────────────────────────────────────────────────────
+# MICOMPAWEB SETUP — Wizard de API keys
+# ──────────────────────────────────────────────────────────────
+
+@app.command()
+def setup() -> None:
+    """🔑 Configurar API keys (primer uso)."""
+    from micompaweb.application.ui.setup_wizard import SetupWizard
+    SetupWizard().run()
 
 
 # ──────────────────────────────────────────────────────────────
