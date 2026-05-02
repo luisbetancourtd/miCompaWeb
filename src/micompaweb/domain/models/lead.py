@@ -158,6 +158,12 @@ class Lead(BaseModel):
     review_count: int = Field(default=0, ge=0)
     owner_response_rate: Optional[float] = Field(default=None, ge=0.0, le=1.0)
 
+    # Estado del negocio
+    business_status: Optional[str] = None  # ej: OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY
+
+    # Fotos
+    photo_references: List[str] = Field(default_factory=list)  # place_photo references de Google
+
     # Reviews
     has_recent_reviews: bool = False
     review_velocity: float = 0.0  # reviews/mes
