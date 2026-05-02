@@ -1,0 +1,1 @@
+"""Infrastructure logging - structured logging configuration."""

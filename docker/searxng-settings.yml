@@ -1,0 +1,84 @@
+# SearXNG settings para miCompaWeb
+# Meta-buscador local sin tracking, sin ads, sin rate limits
+
+use_default_settings: true
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "micompaweb-searxng-secret-2026"  # Cambiar en produccion
+  limiter: false  # Desactivar rate limiting (uso interno)
+  image_proxy: true
+
+search:
+  safe_search: 0
+  autocomplete: "duckduckgo"
+  default_lang: "es"
+
+outgoing:
+  request_timeout: 15.0
+  max_request_timeout: 30.0
+  pool_connections: 100
+  pool_maxsize: 20
+  enable_http2: true
+  retries: 2
+
+# Habilitar motores utiles para prospeccion B2B
+engines:
+  - name: google
+    engine: google
+    shortcut: go
+    disabled: false
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    disabled: false
+  - name: bing
+    engine: bing
+    shortcut: bi
+    disabled: false
+  - name: yandex
+    engine: yandex
+    shortcut: yan
+    disabled: true  # Requiere configuracion adicional
+  - name: brave
+    engine: brave
+    shortcut: br
+    disabled: false
+  - name: startpage
+    engine: startpage
+    shortcut: sp
+    disabled: false
+
+# Desactivar motores que no sirven para B2B
+  - name: wolframalpha
+    disabled: true
+  - name: archlinux
+    disabled: true
+  - name: wikipedia
+    disabled: true
+
+# Plugins
+general:
+  debug: false
+  instance_name: "miCompaWeb Search"
+  donation_url: false
+  contact_url: false
+  privacypolicy_url: false
+  tor_proxy: false
+  # Habilitar JSON output para API
+  search_formats:
+    - html
+    - json
+
+ui:
+  static_use_hash: true
+  default_theme: simple
+  default_locale: es
+
+result_proxy:
+  enabled: false
+
+# Desactivar tracking y analytics
+tracker_url: false
+method: POST

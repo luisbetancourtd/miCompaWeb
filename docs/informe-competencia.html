@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>miCompaWeb — Informe de Competencia y Herramientas 2025/26</title>
+    <style>
+        :root {
+            --bg: #0f172a; --surface: #1e293b; --surface-hover: #334155;
+            --primary: #22d3ee; --accent: #f59e0b; --accent2: #34d399;
+            --danger: #ef4444; --text: #e2e8f0; --text-dim: #94a3b8;
+            --border: #334155; --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --radius: 8px; --shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text); font-family: var(--font);
+            line-height: 1.6; padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            color: white; padding: 40px; border-radius: var(--radius);
+            margin-bottom: 30px; text-align: center; box-shadow: var(--shadow);
+        }
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        header p { opacity: 0.9; font-size: 1.1rem; max-width: 700px; margin: 0 auto; }
+        .badge {
+            display: inline-block; background: rgba(255,255,255,0.2);
+            padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;
+            margin-top: 15px; backdrop-filter: blur(4px);
+        }
+
+        h2 {
+            color: var(--primary); font-size: 1.8rem; margin: 40px 0 20px;
+            padding-bottom: 10px; border-bottom: 2px solid var(--primary);
+            display: flex; align-items: center; gap: 12px;
+        }
+        h2::before { content: "▸"; color: var(--accent); font-size: 1.4rem; }
+        h3 { color: var(--accent); margin: 25px 0 15px; font-size: 1.3rem; }
+
+        .card {
+            background: var(--surface); border-radius: var(--radius);
+            padding: 24px; margin-bottom: 20px; border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+
+        table {
+            width: 100%; border-collapse: collapse; margin: 15px 0;
+            background: var(--surface); border-radius: var(--radius); overflow: hidden;
+        }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #0b1120; color: var(--primary); font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        tr:hover { background: rgba(34, 211, 238, 0.05); }
+        td.price { color: var(--accent2); font-weight: 600; }
+        td.risk { color: var(--danger); }
+        td.ok { color: var(--accent2); }
+
+        .tag {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .tag-free { background: #14532d; color: #34d399; }
+        .tag-cheap { background: #78350f; color: #fbbf24; }
+        .tag-paid { background: #7f1d1d; color: #fca5a5; }
+        .tag-api { background: #1e3a5f; color: #7dd3fc; }
+        .tag-must { background: #4c1d95; color: #c4b5fd; }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(14,165,233,0.1), rgba(139,92,246,0.1));
+            border-left: 4px solid var(--primary); padding: 20px; border-radius: var(--radius); margin: 20px 0;
+        }
+        .warning-box {
+            background: rgba(239,68,68,0.08); border-left: 4px solid var(--danger);
+            padding: 20px; border-radius: var(--radius); margin: 20px 0;
+        }
+        .success-box {
+            background: rgba(52,211,153,0.08); border-left: 4px solid var(--accent2);
+            padding: 20px; border-radius: var(--radius); margin: 20px 0;
+        }
+
+        .meter-container { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
+        .meter { flex: 1; height: 8px; background: #334155; border-radius: 4px; overflow: hidden; }
+        .meter-fill { height: 100%; border-radius: 4px; }
+        .meter-label { font-size: 0.85rem; min-width: 140px; }
+        .meter-val { font-size: 0.8rem; min-width: 45px; text-align: right; color: var(--text-dim); }
+
+        .module-badge {
+            display: inline-block; padding: 6px 16px; border-radius: var(--radius);
+            font-weight: 700; font-size: 0.9rem; margin-right: 8px; margin-bottom: 8px;
+        }
+        .mod-m1 { background: #164e63; color: #22d3ee; }
+        .mod-m2 { background: #312e81; color: #a5b4fc; }
+        .mod-m3 { background: #3f6212; color: #bef264; }
+        .mod-m4 { background: #7c2d12; color: #fdba74; }
+
+        .roadmap { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+        .roadmap-item {
+            flex: 1; min-width: 220px; background: var(--surface);
+            border-radius: var(--radius); padding: 16px; border-top: 3px solid transparent;
+            position: relative;
+        }
+        .roadmap-item.m1-done { border-top-color: var(--primary); }
+        .roadmap-item.m2-pending { border-top-color: #a78bfa; }
+        .roadmap-item.m3-pending { border-top-color: var(--accent2); }
+        .roadmap-item.m4-pending { border-top-color: var(--accent); }
+
+        .code-block {
+            background: #0b1120; border: 1px solid #1e293b; border-radius: 6px;
+            padding: 14px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85rem;
+            overflow-x: auto; color: #a5b4fc; margin: 12px 0;
+        }
+
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        footer { text-align: center; margin-top: 60px; padding: 30px; color: var(--text-dim); font-size: 0.9rem; border-top: 1px solid var(--border); }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<header>
+    <h1>🎯 miCompaWeb — Informe de Competencia & Herramientas 2025/26</h1>
+    <p>Investigación profunda de mercado: competidores, APIs, trucos, herramientas open-source y estrategias de costo-efectivas para los módulos M1-M4.</p>
+    <span class="badge">🤖 Calidad > Humano > Local > Costo</span>
+</header>
+
+<div class="highlight-box">
+    <strong>💡 Conclusión ejecutiva:</strong> miCompaWeb M1 ya tiene una arquitectura hexagonal superior a la mayoría de competidores.
+    Los módulos M2-M4 deben expandirse con scraping programático + LLM local gratuito + APIs de bajo costo.
+    El Ubersuggest $40 deal es REAL. Groq free tier sí existe. Vercel Hobby es gratuito para siempre.
+    n8n es el orquestador open-source perfecto para flujos de leads.
+</div>
+
+<h2>📊 Resumen de Módulos y Estado</h2>
+<div class="roadmap">
+    <div class="roadmap-item m1-done">
+        <strong style="color:#22d3ee;">M1 PROSPECTION ✅</strong><br>
+        <small>Pipeline: Discovery → Audit → Scoring → Revenue → Export. Arquitectura hexagonal, SQLite cache, 47 tests. Faltan: Wizard, TUI completa, InputGuardian, CostGuardian.</small>
+    </div>
+    <div class="roadmap-item m2-pending">
+        <strong style="color:#a5b4fc;">M2 ANALYZE/SPY 🔮</strong><br>
+        <small>Competitor deep analysis, social media audit, SEO técnico (arquitectura + posicionamiento), outreach email. Necesita: Scrapers, SERP APIs, sentiment analysis.</small>
+    </div>
+    <div class="roadmap-item m3-pending">
+        <strong style="color:#bef264;">M3 KEYWORD RESEARCH 🔮</strong><br>
+        <small>Keyword research profesional, plan de marketing completo, budgeting. Necesita: Ubersuggest/DataForSEO/SEMrush APIs, Groq para análisis de contenido.</small>
+    </div>
+    <div class="roadmap-item m4-pending">
+        <strong style="color:#fdba74;">M4 PROTOTYPING 🔮</strong><br>
+        <small>Generación de prototipos UI con IA (v0, Relume, Framer), chatbot IA, deploy en Vercel/WordPress. Necesita: Vercel AI SDK, Botpress/Tidio/ManyChat.</small>
+    </div>
+</div>
+
+<h2>🏆 M1 Competidores Directos de Prospección</h2>
+<p style="color:var(--text-dim); margin-bottom:20px;">Herramientas que hacen "lead discovery + scoring + outreach" para agencias web. Analizados contra la arquitectura hexagonal de miCompaWeb.</p>
+
+<table>
+<thead><tr><th>Herramienta</th><th>Precio</th><th>Fuentes</th><th>Scoring</th><th>Export</th><th>Open Source</th><th>Offline</th><th>CLI/API</th><th>Veredicto vs miCompa</th></tr></thead>
+<tbody>
+<tr><td><strong>Apollo.io</strong></td><td class="price">Free tier (50 créditos/mes) / $49-149/mes</td><td>B2B database (no local businesses)</td><td>Básico (buying intent scores)</td><td>CSV, CRM integrations</td><td>❌ No</td><td>❌ No</td><td>API + Web UI</td><td class="ok">Apollo es B2B SaaS, no local business. No compite directo.</td></tr>
+<tr><td><strong>Instantly.ai</strong></td><td class="price">$37/mes (starter)</td><td>Lead lists compradas</td><td>Ninguno</td><td>CSV</td><td>❌ No</td><td>❌ No</td><td>Solo Web UI</td><td class="ok">Solo cold email automation. No tiene discovery propio.</td></tr>
+<tr><td><strong>Lemlist</strong></td><td class="price">$59/mes</td><td>LinkedIn + CSV upload</td><td>Ninguno</td><td>Inline (emails)</td><td>❌ No</td><td>❌ No</td><td>Solo Web UI</td><td class="ok">Outreach-centric. No discovery automático de negocios locales.</td></tr>
+<tr><td><strong>Outscraper</strong></td><td class="price">$49/mes (5000 resultados) / $0.001/resultado</td><td>Google Maps, Google Search, Yelp, TripAdvisor</td><td>Ninguno (solo raw data)</td><td>CSV, JSON, XLSX</td><td>❌ No</td><td>❌ No</td><td>API + Web UI</td><td class="risk">⚠️ COMPETIDOR DIRECTO: scrapea Google Maps como miCompaWeb. Pero NO tiene scoring, audit, ni revenue.</td></tr>
+<tr><td><strong>G Maps Extractor</strong></td><td class="price">$0 (básico) / $29/mes (pro)</td><td>Solo Google Maps</td><td>Ninguno</td><td>CSV, JSON, XLSX</td><td>❌ No</td><td>❌ No</td><td>Extensión Chrome + Web UI</td><td class="risk">⚠️ COMPETIDOR DIRECTO: scrapea Google Maps reviews, emails, redes. No tiene scoring inteligente.</td></tr>
+<tr><td><strong>BrightLocal (Citations)</strong><td><td class="price">$29/mes</td><td>Citations + GBP audit</td><td>GBP Health score</td><td>PDF reports</td><td>❌ No</td><td>❌ No</td><td>Web UI</td><td class="ok">Diferente nicho (local SEO audit, no lead scoring).</td></tr>
+<tr><td><strong>Octopus CRM (LinkedIn)</strong></td><td class="price">$25/mes</td><td>LinkedIn profiles</td><td>Ninguno</td><td>CSV</td><td>❌ No</td><td>❌ No</td><td>Extensión Chrome</td><td class="ok">B2B LinkedIn focused, no geo-local business discovery.</td></tr>
+</tbody>
+</table>
+
+<div class="success-box">
+    <strong>✅ Ventaja competitiva de miCompaWeb M1:</strong> NINGUNO de los competidores combina:
+    <ul>
+        <li>Arquitectura hexagonal offline-first (SQLite cache, fixtures)</li>
+        <li>Auditoría web automática (SSL, tracking, tech stack, mobile)</li>
+        <li>LLM scoring explicable con breakdowns (no solo un número)</li>
+        <li>Revenue estimation con metodología defendible + sensibilidad</li>
+        <li>Multi-fuente con fallback chain (Google Places → Fixture → Cache)</li>
+        <li>CLI nativo (no extensión Chrome, no SaaS web)</li>
+    </ul>
+</div>
+
+<h2>🕵️ M2 — Herramientas de Información Gathering & Competitor Spying</h2>
+<p style="color:var(--text-dim); margin-bottom:20px;">Para el módulo "miCompa se convierte en espía": análisis de competencia, arquitectura web, social presence, e identificación de gap analysis.</p>
+
+<div class="grid-2">
+    <div class="card">
+        <h3>🌐 SEO & Competitor Analysis Tools</h3>
+        <table>
+        <tbody>
+        <tr><td><strong>SEMrush</strong></td><td class="price">Free: 10 queries/día, 1 proyecto. Paid: $139/mes.</td><td><span class="tag tag-paid">Paid</span></td></tr>
+        <tr><td><strong>Ahrefs</strong></td><td class="price">Free: Webmaster Tools (site audit + keywords propios). Paid: $99/mes.</td><td><span class="tag tag-cheap">Free tier</span></td></tr>
+        <tr><td><strong>SimilarWeb</strong></td><td class="price">Free: datos básicos. API: custom pricing (~$200+/mes).</td><td><span class="tag tag-paid">API Caro</span></td></tr>
+        <tr><td><strong>SpyFu</strong></td><td class="price">$39/mes. Muestra keywords de competencia + ad history.</td><td><span class="tag tag-cheap">Barato</span></td></tr>
+        <tr><td><strong>SERPStat</strong></td><td class="price">$69/mes. API disponible. Good alternative a SEMrush.</td><td><span class="tag tag-cheap">Alternativa</span></td></tr>
+        <tr><td><strong>Mangools (KWFinder)</strong></td><td class="price">$29/mes. UI muy amigable, buena para agencias pequeñas.</td><td><span class="tag tag-cheap">Muy barato</span></td></tr>
+        </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>📱 Social Media Audit Tools</h3>
+        <table>
+        <tbody>
+        <tr><td><strong>Socialinsider</strong></td><td class="price">Free Instagram audit (sin signup). Paid: $99/mes.</td><td><span class="tag tag-free">Free audit</span></td></tr>
+        <tr><td><strong>Brandwatch (ex-Falcon)</strong></td><td class="price">Enterprise ($800+/mes). Too expensive.</td><td><span class="tag tag-paid">Enterprise</span></td></tr>
+        <tr><td><strong>Metricool</strong></td><td class="price">Free: 1 brand, análisis básico. Paid: €18/mes.</td><td><span class="tag tag-free">Free tier</span></td></tr>
+        <tr><td><strong>Phantombuster</strong></td><td class="price">$30/mes (1h ejecución/día). Scrapea Instagram, LinkedIn, Twitter.</td><td><span class="tag tag-api">Scraper</span></td></tr>
+        <tr><td><strong>Apify (Actors)</strong></td><td class="price">Free: $5 créditos/mes. Pagas por uso ($0.40/hora compute).</td><td><span class="tag tag-api">Pay-as-you-go</span></td></tr>
+        </tbody>
+        </table>
+    </div>
+</div>
+
+<h3>🔧 Open Source Tools para M2 (Information Gathering)</h3>
+<div class="grid-2">
+    <div class="card">
+        <strong style="color:var(--primary);">🕸️ Scrapy + Scrapy-Playwright</strong><br>
+        Framework Python robusto para scraping estructurado. Con Playwright puede ejecutar JS.<br>
+        <span class="tag tag-free">Open Source</span> <span class="tag tag-must">Must-have</span><br>
+        <strong>Uso miCompa:</strong> Competitor scraping, extracción de arquitectura de sitios.
+    </div>
+    <div class="card">
+        <strong style="color:var(--primary);">📊 python-seo-analyzer (Seth Black)</strong><br>
+        <code>https://github.com/sethblack/python-seo-analyzer</code><br>
+        Analiza estructura del site, cuenta palabras, detecta errores SEO técnicos.<br>
+        <span class="tag tag-free">Open Source</span>
+    </div>
+    <div class="card">
+        <strong style="color:var(--primary);">🔎 theHarvester</strong><br>
+        Tool de reconocimiento OSINT. Busca emails, subdominios, hosts, employee names.<br>
+        <span class="tag tag-free">Open Source</span> <span class="tag tag-must">OSINT</span>
+    </div>
+    <div class="card">
+        <strong style="color:var(--primary);">🧠 n8n (Automation)</strong><br>
+        636+ workflows de lead generation listos. Self-hosteado gratuito.<br>
+        <span class="tag tag-free">Open Source</span> <span class="tag tag-must">Orquestador</span><br>
+        <strong>Uso miCompa:</strong> Orquestar flujos de outreach, notificaciones, sync.
+    </div>
+</div>
+
+<h2>🕷️ Scraping APIs — Rotación y Proxy Barato</h2>
+<p style="color:var(--text-dim);">Para M2/M3 necesitamos scrapear SERPs, redes, y sitios de competencia sin ser bloqueados. Comparativa de APIs con pricing real.</p>
+
+<table>
+<thead><tr><th>API</th><th>Precio</th><th>Free Tier</th><th>SERP Google</th><th>Social Scraping</th><th>JS Rendering</th><th>Recomendación miCompa</th></tr></thead>
+<tbody>
+<tr><td><strong>ScrapingBee</strong></td><td class="price">€49/mes (25K API calls)</td><td>200 calls/mes</td><td>✅ Sí</td><td>✅ Sí</td><td>✅ Sí (headless)</td><td class="ok">Buena, pero hay más baratas.</td></tr>
+<tr><td><strong>ScraperAPI</strong></td><td class="price">$49/mes (100K calls) / $0.0003/call</td><td>1000 calls/mes</td><td>✅ Sí</td><td>✅ Sí</td><td>✅ Sí</td><td class="ok">🏆 Mejor ratio precio/volumen para dev individual.</td></tr>
+<tr><td><strong>Scrapingdog</strong></td><td class="price">$30/mes (50K calls)</td><td>1000 calls/mes</td><td>✅ Sí</td><td>✅ Sí</td><td>✅ Sí</td><td class="ok">Muy barata. Ideal para arrancar.</td></tr>
+<tr><td><strong>SerpApi</strong></td><td class="price">$50/mes (5K searches)</td><td>100 searches/mes</td><td>✅ Sí (especializado)</td><td>❌ No</td><td>❌ No (SERP only)</td><td class="ok">Especialista SERP. Útil para M3 keyword.</td></tr>
+<tr><td><strong>DataForSEO</strong></td><td class="price">Pay-as-you-go ($0.001/resultado aprox)</td><td>Ninguno</td><td>✅ Extremadamente completo</td><td>✅ Sí</td><td>❌ No (API, no scraper)</td><td class="ok">🏆 Datos SEO estructurados. Ideal para M3/M2.</td></tr>
+<tr><td><strong>DIY: Tor + rotating-user-agent + residential proxy</strong></td><td class="price">$0-$10/mes (BrightData pay-as-you-go residential desde $5)</td><td>Sí (Tor)</td><td>✅ Posible</td><td>⚠️ Complejo</td><td>⚠️ Lento</td><td class="risk">Solo para hardcore. No recomendado para producto.</td></tr>
+</tbody>
+</table>
+
+<div class="highlight-box">
+    <strong>💰 Strategia de costo para scraping:</strong>
+    <ol>
+        <li><b>Phase 1 (solo tú):</b> ScraperAPI free tier (1000 calls) + DIY con Crawl4AI local + Playwright. Para SERP usa DataForSEO con créditos mínimos.</li>
+        <li><b>Phase 2 (primera agencia):</b> Scrapingdog $30/mes (50K) o ScraperAPI $49/mes.</li>
+        <li><b>Phase 3 (escala):</b> DataForSEO pay-as-you-go para SEO data estructurado + Apify para social scraping a demanda.</li>
+    </ol>
+</div>
+
+<h2>🔍 M3 — Keyword Research Profesional (El hack de Ubersuggest)</h2>
+
+<div class="warning-box">
+    <strong>⚡ EL HACK REAL DE UBERSUGGEST (confirmado por Reddit, Enero 2025):</strong><br>
+    1. Regístrate en Ubersuggest 7-day free trial ($7 días).<br>
+    2. Usa intensivamente durante 6 días (exporta TODOS los datos: keywords, backlinks, site audits, content ideas).<br>
+    3. Al cancelar, al pasar por el flow de cancelación/cierre, Neil Patel ofrece un "Lifetime Offer" de pago único ($99-$120-$400 según plan).<br>
+    4. <b>Esto da ACCESO ILIMITADO de por vida por ~$99-$120.</b><br>
+    5. <b>Limitante:</b> Solo 1-3 proyectos activos (depende del plan lifetime). Para un freelance individual <strong>es PERFECTO</strong>.<br>
+    6. NO tiene API. Para automatización necesitas screen scraping + Playwright.
+</div>
+
+<h3>📊 Comparativa Keyword Research APIs y Tools</h3>
+<table>
+<thead><tr><th>Tool/API</th><th>Precio</th><th>Free Tier</th><th>API</th><th>Keywords/mes</th><th>Backlinks</th><th>Recomendación</th></tr></thead>
+<tbody>
+<tr><td><strong>Ubersuggest</strong></td><td class="price">$0 (limitado) / $29/mes / Lifetime ~$99</td><td>3 keyword searches/día</td><td>❌ No API</td><td>~10K/mes</td><td>Limitado</td><td class="ok">🏆 Best value for money. Compra el lifetime.</td></tr>
+<tr><td><strong>Google Keyword Planner</strong></td><td class="price">GRATIS (necesita Google Ads account)</td><td>Ilimitado (con cuenta activa o pausada)</td><td>❌ No API directa (solo Google Ads API)</td><td>Ilimitado</td><td>❌ No</td><td class="ok">🏆 Gratis y ilimitado. Solo search volume range.</td></tr>
+<tr><td><strong>SEMrush</strong></td><td class="price">$139/mes</td><td>10 queries/día (muy limitado)</td><td>✅ Sí, API add-on</td><td>10K (pro)</td><td>Completo</td><td class="risk">Muy caro para solo dev. Capa gratuita inútil para automatización.</td></tr>
+<tr><td><strong>Ahrefs Webmaster Tools</strong></td><td class="price">GRATIS (para sites que verificas)</td><td>Site audit + keywords OWN site</td><td>❌ No API gratuita</td><td>Limitado a tu site</td><td>Limitado</td><td class="ok">Útil para M3 plan de keywords de TU cliente (una vez construido el site, verificarlo en Search Console y luego conectar Ahrefs WMT)</td></tr>
+<tr><td><strong>DataForSEO</strong></td><td class="price">Pay-as-you-go ($0.001/call aprox)</td><td>Ninguno</td><td>✅ Extremadamente completo</td><td>Ilimitado (pagas por query)</td><td>Sí (Backlinks API)</td><td class="ok">🏆 PAYG ideal para CLI tool. Solo pagas cuando el usuario solicita keyword research.</td></tr>
+<tr><td><strong>SerpApi</strong></td><td class="price">$50/mes (5K searches)</td><td>100/mes</td><td>✅ Sí</td><td>5K/mes</td><td>SERP only</td><td class="ok">Para M3: extraer SERP features, related searches, People Also Ask (gratis con scraping directo + Playwright).</td></tr>
+<tr><td><strong>WordStream Free Keyword Tool</strong></td><td class="price">GRATIS</td><td>Ilimitado (sin cuenta)</td><td>❌ No API</td><td>~100 por query</td><td>❌ No</td><td class="ok">Manual only. Para validación rápida.</td></tr>
+</tbody>
+</table>
+
+<div class="success-box">
+    <strong>🎯 Recomendación miCompaWeb M3 (Keyword Research):</strong>
+    <ul>
+        <li><b>Google Keyword Planner FREE</b>: volumen, competencia, CPC (data real de Google Ads, no estimaciones). Automatizable vía Google Ads API con limitaciones.</li>
+        <li><b>DataForSEO</b> (pay-as-you-go): Para keywords de competencia, backlinks, SERP analysis. Integra su API REST en Python. Muy barato si solo haces 50-100 queries por proyecto.</li>
+        <li><b>Ubersuggest Lifetime ~$99</b>: Para análisis manual profundo, Content Ideas, Backlinks. Automatiza exports con Playwright para capturar datos.</li>
+        <li><b>SERP scraping directo</b>: Para "People Also Ask" y "Related Searches" usa Playwright + BeautifulSoup (0 costo).</li>
+        <li><b>Groq LLM</b> (free tier): Para analizar keywords en clusters, identificar intención de búsqueda, generar meta descriptions y titles optimizados.</li>
+        <li><b>Ahrefs Webmaster Tools FREE</b>: Después de lanzar el site del cliente, conectar para tracking post-lanzamiento. No para research previo.</li>
+    </ul>
+</div>
+
+<h2>🎨 M4 — Prototipado UI con IA y Generadores</h2>
+<p style="color:var(--text-dim);">Generación de prototipos web funcionales a partir de prompts, screenshots o descripciones. Ideal para mostrar al cliente antes de construir.</p>
+
+<div class="grid-3">
+    <div class="card">
+        <span class="tag tag-must">MUST-HAVE</span><br>
+        <strong style="color:var(--primary); font-size:1.1rem;">🚀 v0.dev (Vercel)</strong><br>
+        <span class="tag tag-free">Free (generoso)</span><br>
+        Genera componentes React + Tailwind desde prompts de texto. Exporta a Next.js.<br><br>
+        <strong>Pros:</strong> Código real, no mockups. Integra shadcn/ui. Deploy one-click a Vercel.<br>
+        <strong>Cons:</strong> Solo component-level, no full site architecture.<br>
+        <strong>Uso miCompa:</strong> Generar secciones de landing pages rápidamente.
+    </div>
+
+    <div class="card">
+        <span class="tag tag-must">MUST-HAVE</span><br>
+        <strong style="color:var(--primary); font-size:1.1rem;">📦 Relume AI</strong><br>
+        <span class="tag tag-cheap">$19/mes starter</span><br>
+        Genera sitemaps, wireframes, style guides completos para marketing websites.<br><br>
+        <strong>Pros:</strong> Sitemap completo + wireframes + copy AI. Exporta a Figma.<br>
+        <strong>Cons:</strong> No genera código real, necesita hand-off a dev.<br>
+        <strong>Uso miCompa:</strong> Entregar a cliente wireframes + estructura de site + copy.
+    </div>
+
+    <div class="card">
+        <strong style="color:var(--primary); font-size:1.1rem;">🖼️ Framer AI</strong><br>
+        <span class="tag tag-cheap">Free tier (3 proyectos)</span><br>
+        Genera sitios web completos con layout, animaciones, CMS integrado.<br><br>
+        <strong>Pros:</strong> Full site con animaciones, responsive, CMS.<br>
+        <strong>Cons:</strong> Exporta a HTML/React pero con dependencias Framer. No es "clean code".<br>
+        <strong>Uso miCompa:</strong> Prototipos interactivos para presentar al cliente.
+    </div>
+
+    <div class="card">
+        <strong style="color:var(--primary); font-size:1.1rem;">📱 Stitch (.stitch)</strong><br>
+        <span class="tag tag-free">Free / Freemium</span><br>
+        Editor visual AI para crear sitios web. Competidor de Framer.<br><br>
+        <strong>Uso miCompa:</strong> Alternativa a Framer si esta última no satisface.
+    </div>
+
+    <div class="card">
+        <strong style="color:var(--primary); font-size:1.1rem;">Uizard AI</strong><br>
+        <span class="tag tag-cheap">Free tier (3 proyectos)</span><br>
+        Transforma sketches a wireframes digitales. Ideal para mood boards.<br>
+        <strong>Uso miCompa:</strong> Si el cliente dibuja ideas en papel, Uizard las digitaliza.
+    </div>
+
+    <div class="card">
+        <strong style="color:var(--primary); font-size:1.1rem;">💻 Screenshot to Code (Open Source)</strong><br>
+        <span class="tag tag-free">Open Source</span><br>
+        GitHub trending: screenshot.png → HTML/CSS/React/Tailwind funcional.<br><br>
+        <strong>Uso miCompa:</strong> Tomar screenshot del site actual del competidor/cliente y generar código base.
+    </div>
+</div>
+
+<h2>🤖 Chatbots IA — Comparativa para Sitios Web de Clientes</h2>
+<p style="color:var(--text-dim);">El chatbot es un "upsell" potente. Analizamos opciones desde gratis hasta enterprise, priorizando integración Next.js / WordPress.</p>
+
+<table>
+<thead><tr><th>Chatbot</th><th>Precio</th><th>Free Tier</th><th>Next.js</th><th>WP</th><th>AI Model</th><th>Hosting</th><th>Recomendación</th></tr></thead>
+<tbody>
+<tr><td><strong>Tidio</strong></td><td class="price">Free (50 conv/mes) / $29/mes pro</td><td>50 conv/mes</td><td>✅ Widget JS</td><td>✅ Plugin</td><td>GPT-4 (Lyro AI, paid)</td><td>Cloud (Tidio)</td><td class="ok">🏆 Mejor balance free/AI. Lyro AI funciona bien. Ideal para agencias web.</td></tr>
+<tr><td><strong>ManyChat</strong></td><td class="price">Free (1K contactos) / $15/mes</td><td>1K contactos</td><td>⚠️ Solo embed</td><td>⚠️ Widget limitado</td><td>Rule-based + NLP</td><td>Cloud (ManyChat)</td><td class="ok">Mejor para Facebook/Instagram, no para web genérica.</td></tr>
+<tr><td><strong>Voiceflow</strong></td><td class="price">Free (1 proyecto) / $50/mes</td><td>1 proyecto, 10K messages</td><td>✅ Embed JS</td><td>✅ Embed JS</td><td>GPT-4 / Claude</td><td>Cloud (Voiceflow)</td><td class="ok">Muy potente para flujos complejos. Un poco overkill para lead capture simple.</td></tr>
+<tr><td><strong>Chatbase</strong></td><td class="price">$19/mes (2K messages)</td><td>1 chatbot, 20 messages/mes (inútil)</td><td>✅ Embed JS</td><td>✅ Embed JS</td><td>GPT-4</td><td>Cloud (Chatbase)</td><td class="ok">Entrena con tu knowledge base. Bueno para FAQs.</td></tr>
+<tr><td><strong>🆕 Vercel AI SDK Chatbot</strong></td><td class="price">GRATIS (open source)</td><td>Ilimitado (tú pagas modelo LLM)</td><td>✅✅✅ Next.js native</td><td>❌ Necesita iframe</td><td>Groq / OpenAI / Ollama (tú eliges)</td><td>Vercel (free tier)</td><td class="ok">🏆 PERFECTO para devs. Full control. Integra stream AI. Uses Groq free tier = $0 total.</td></tr>
+<tr><td><strong>Botpress (Self-hosted)</strong></td><td class="price">Cloud: $0 (2K messages) / Self-hosted: GRATIS</td><td>2K messages/mes cloud</td><td>✅ SDK JS</td><td>✅ SDK JS</td><td>GPT-4 / custom LLM</td><td>Self-hosted o Cloud</td><td class="ok">🏆 Open source, self-hosted en Vercel/Node. Muy customizable. Más complejo.</td></tr>
+<tr><td><strong>Crisp</strong></td><td class="price">Free tier (2 agents) / $25/mes</td><td>2 agents, live chat</td><td>✅ Widget JS</td><td>✅ Plugin</td><td>GPT-4 (MagicReply)</td><td>Cloud (Crisp)</td><td class="ok">UI muy limpia. Ideal para startups.</td></tr>
+</tbody>
+</table>
+
+<div class="highlight-box">
+    <strong>🤖 Recomendación miCompaWeb Chatbot para clientes:</strong>
+    <ol>
+        <li><b>Para sitios Next.js (tus proyectos propios): Vercel AI SDK + Groq free tier</b> = $0. Control total, streaming, historial. Instrucciones de implementación en docs de Vercel.</li>
+        <li><b>Para WordPress (clientes que quieren WP): Tidio free tier</b> hasta que crezcan. Luego upgrade a pro ($29/mes) con Lyro AI. Widget simple, sin código.</li>
+        <li><b>Para clientes que quieren "bot inteligente" sin dev ongoing: Botpress cloud</b> (2K messages/mes free). Puedes entrenarlo con docs del cliente.</li>
+        <li><b>Nunca recomendar ManyChat</b> para sitios web genéricos. Es solo para Messenger/Instagram.</li>
+    </ol>
+</div>
+
+<h2>🎨 M4 — Prototipado UI con IA y Generadores</h2>
+
+<div class="grid-3">
+    <div class="card">
+        <span class="tag tag-must">MUST-HAVE</span><br>
+        <strong style="color:var(--primary); font-size:1.1rem;">🚀 v0.dev (Vercel)</strong><br>
+        <span class="tag tag-free">Free (generoso)</span><br>
+        Genera componentes React + Tailwind desde prompts. Exporta a Next.js.<br><br>
+        <strong>Pros:</strong> Código real, no mockups. Integra shadcn/ui. Deploy one-click.<br>
+        <strong>Cons:</strong> Solo component-level, no full site.<br>
+        <strong>Uso miCompa:</strong> Secciones de landing pages rápido.
+    </div>
+
+    <div class="card">
+        <span class="tag tag-must">MUST-HAVE</span><br>
+        <strong style="color:var(--primary); font-size:1.1rem;">📦 Relume AI</strong><br>
+        <span class="tag tag-cheap">$19/mes starter</span><br>
+        Sitemaps, wireframes, style guides completos para marketing websites.<br><br>
+        <strong>Pros:</strong> Estructura completa + copy AI. Exporta a Figma.<br>
+        <strong>Cons:> No genera código real, hand-off a dev.<br>
+        <strong>Uso miCompa:</strong> Entregar wireframes + estructura al cliente.
+    </div>
+
+    <div class="card">
+        <strong style="color:var(--primary); font-size:1.1rem;">💻 Screenshot to Code</strong><br>
+        <span class="tag tag-free">Open Source</span><br>
+        screenshot.png → HTML/CSS/React funcional.<br><br>
+        <strong>Uso miCompa:</strong> Tomar screenshot del competidor y generar código base.
+    </div>
+</div>
+
+<h2>🤖 Chatbots IA — Comparativa para Clientes</h2>
+<table>
+<thead><tr><th>Chatbot</th><th>Precio</th><th>Free Tier</th><th>Next.js</th><th>WP</th><th>AI Model</th><th>Recomendación</th></tr></thead>
+<tbody>
+<tr><td><strong>Vercel AI SDK</strong></td><td class="price">GRATIS</td><td>Ilimitado</td><td>✅✅✅ Native</td><td>❌ Iframe</td><td>Groq / OpenAI / Ollama</td><td class="ok">🏆 PERFECTO para Next.js. Full control. $0 con Groq.</td></tr>
+<tr><td><strong>Tidio</strong></td><td class="price">Free (50 conv)</td><td>50/mes</td><td>✅ Widget</td><td>✅ Plugin</td><td>GPT-4 (Lyro AI paid)</td><td class="ok">🏆 Mejor balance free/AI. Ideal para WP.</td></tr>
+<tr><td><strong>Botpress</strong></td><td class="price">Cloud: 2K msg free / Self-hosted: FREE</td><td>2K/mes</td><td>✅ SDK</td><td>✅ SDK</td><td>GPT-4 / custom</td><td class="ok">Open source. Muy customizable. Más complejo.</td></tr>
+<tr><td><strong>ManyChat</strong></td><td class="price">Free (1K contactos)</td><td>1K contactos</td><td>⚠️ Embed limitado</td><td>⚠️ Widget limitado</td><td>Rule-based</td><td class="risk">Solo Facebook/Instagram. No para web genérica.</td></tr>
+</tbody>
+</table>
+
+<div class="success-box">
+    <strong>🤖 Recomendación miCompaWeb:</strong>
+    <ul>
+        <li><b>Next.js propios:</b> Vercel AI SDK + Groq free tier = $0</li>
+        <li><b>WordPress cliente:</b> Tidio free → pro ($29/mes) cuando crezca</li>
+        <li><b>Cliente sin dev ongoing:</b> Botpress cloud (2K msg free)</li>
+    </ul>
+</div>
+
+<h2>🚀 Hosting / Deploy — Costo vs Beneficio</h2>
+<div class="grid-3">
+    <div class="card">
+        <span class="tag tag-must">MUST-HAVE</span><br>
+        <strong style="color:var(--primary);">Vercel (Hobby Plan)</strong><br>
+        <span class="tag tag-free">$0 para siempre</span><br>
+        <ul>
+            <li>Hobby: deployments ilimitados, SSL automático, analytics básicas</li>
+            <li>Next.js hosting serverless perfecto</li>
+            <li>Edge Functions incluidas (banda ancha generous)</li>
+            <li>Vercel Blob (storage) hasta 250MB free</li>
+            <li>Vercel AI SDK integrable nativamente</li>
+        </ul>
+        <strong>Limitaciones:</strong> Sin BD persistente. Para BD usa SQLite local, o Neon/Supabase free tier.
+    </div>
+    <div class="card">
+        <strong style="color:var(--primary);">💾 Neon DB</strong><br>
+        <span class="tag tag-free">Free tier generoso</span><br>
+        PostgreSQL serverless con 500MB storage free. Se "pausa" cuando no se usa (cold start ~1s). Ideal para clientes pequeños. Integra con Vercel.
+    </div>
+    <div class="card">
+        <strong style="color:var(--primary);">🌍 InfinityFree / 000webhost</strong><br>
+        <span class="tag tag-free">100% Free</span><br>
+        Hosting PHP/MySQL gratuito (no para Next.js). Para sitios WordPress de clientes con presupuesto cero. Con ads.
+    </div>
+</div>
+
+<h2>🧠 APIs de LLM — Costo Real y Estrategia</h2>
+<table>
+<thead><tr><th>Proveedor</th><th>Costo</th><th>Free Tier</th><th>Modelos</th><th>Velocidad</th><th>Recomendación</th></tr></thead>
+<tbody>
+<tr><td><strong>Groq</strong></td><td class="price">~$0.0001-0.0003 / 1K tokens</td><td>✅ Sí: rate limits (req/min, tokens/min tiers). Gratis real.</td><td>Llama 3.3 70B, Mixtral, Gemma</td><td>🏆 Más rápido del mundo (1200 tokens/sec)</td><td class="ok">🏆 PRINCIPAL para M2/M3. Fast, baratísimo, buenos modelos.</td></tr>
+<tr><td><strong>Ollama (Local)</strong></td><td class="price">$0 (usa tu GPU/CPU)</td><td>✅ Ilimitado</td><td>Llama, Qwen, Phi, Mistral (modelos 1B-70B)</td><td>Depende del hardware (GPU = rápido, CPU = lento)</td><td class="ok">BACKUP cuando Groq cae o para tasks offline. Llama 3.2 3B = ~3GB VRAM, usable en CPU.</td></tr>
+<tr><td><strong>OpenRouter</strong></td><td class="price">Pay-per-use (varía por modelo)</td><td>⚠️ Créditos al registrarse (pocos)</td><td>200+ modelos accesibles (GPT, Claude, Llama)</td><td>Variable (depende del upstream)</td><td class="ok">Fallback para necesitar GPT-4o/Claude sin pagar por separado.</td></tr>
+<tr><td><strong>Google Gemini API</strong></td><td class="price">Free tier: 60 requests/min (generous)</td><td>✅ Muy generoso</td><td>Gemini 1.5 Pro / Flash</td><td>Buena (Google infra)</td><td class="ok">🏆 ALTENATIVA GRATIS a considerar. Gemini Flash 1.5 es muy bueno y rápido. Soporte multimodal (imagenes + texto).</td></tr>
+<tr><td><strong>Cohere</strong></td><td class="price">Free tier limitado</td><td>⚠️ Poco generoso</td><td>Command, Embed</td><td>Buena</td><td class="ok">Para embeddings y reranking. No para generación general.</td></tr>
+</tbody>
+</table>
+
+<div class="highlight-box">
+    <strong>🧠 Estrategia LLM miCompaWeb (costo cero a bajo):</strong>
+    <ol>
+        <li><b>Principal:</b> Groq free tier (para tasks rápidos: scoring, vigency, email draft). Maneja rate limits con backoff.</li>
+        <li><b>Backup local:</b> Ollama + Llama 3.2 3B (corre en CPU sin GPU). Fallback offline completo.</li>
+        <li><b>Alternativa gratis:</b> Google Gemini API free tier (60 req/min). Útil para análisis de largos textos (competitor reports, keyword clusters).</li>
+        <li><b>Heurístico:</b> HeuristicClient ya integrado en M1 para $0 cuando todo lo demás falla.</li>
+    </ol>
+</div>
+
+<h2>📱 M2 Expandido — Social Media Presence Audit</h2>
+<div class="card">
+    <h3>Redes Sociales a Auditar por Cada Prospecto / Competidor</h3>
+    <table>
+    <thead><tr><th>Red</th><th>Datos Extraíbles</th><th>API Oficial</th><th>API Libre</th><th>Scraper Libre</th><th>Recomendación</th></tr></thead>
+    <tbody>
+    <tr><td><strong>Instagram</strong></td><td>Seguidores, engagement rate, posts freq, bio, link, reels</td><td>Instagram Graph API (necesita Business Account)</td><td>❌ No</td><td>Instaloader (Python, OSINT)</td><td>Instaloader para perfil público. Instagram Basic Display para clientes que autoricen.</td></tr>
+    <tr><td><strong>YouTube</strong></td><td>Subs, views, videos, descripción, tags, shorts</td><td>YouTube Data API v3 (generous)</td><td>✅ 10K unidades/día</td><td>pytubefix, youtube-data-api</td><td>🏆 API oficial gratis es suficiente. 10K unidades/día = ~200 canales analizados.</td></tr>
+    <tr><td><strong>TikTok</strong></td><td>Seguidores, likes, videos, hashtag performance</td><td>TikTok Research API (pro, $$$)</td><td>❌ No</td><td>yt-dlp (TikTok), playwright</td><td>Difícil. Necesita proxies rotativos. Considerar omitir en v1.</td></tr>
+    <tr><td><strong>LinkedIn</strong></td><td>Posts, seguidores, company info, empleados</td><td>LinkedIn API ($$$$)</td><td>❌ No</td><td>❌ Bloqueo agresivo</td><td>Scraping ilegal según TOS. Dejar para fase 3 o usar datos públicos (Google SERP de LinkedIn).</td></tr>
+    <tr><td><strong>Facebook</strong></td><td>Page likes, engagement, posts</td><td>Facebook Graph API</td><td>✅ Developer Free</td><td>facebook-scraper (Python)</td><td>API oficial para pages públicas. No necesita Business Account para datos públicos.</td></tr>
+    </tbody>
+    </table>
+</div>
+
+<div class="highlight-box">
+    <strong>📱 Social Media Audit Automático para miCompaWeb M2:</strong>
+    <ol>
+        <li><b>YouTube:</b> API oficial gratis → extracción de: total views, subs, últimos 50 videos (avg views, engagement), tags usados, descripción, frecuencia de posting. Análisis con Groq para identificar oportunidades de contenido.</li>
+        <li><b>Instagram:</b> Si perfil público → Instaloader para metadata. Si privado → Google SERP para menciones y backlinks. Engagement rate estimado con posts públicos.</li>
+        <li><b>Facebook:</b> Facebook-scraper lib (Python) para páginas públicas. Extractora de posts, engagement, check-ins.</li>
+        <li><b>TikTok:</b> Omitir en v1 (demasiado difícil/riesgo legal).</li>
+        <li><b>LinkedIn:</b> Solo analizar el company page via Google SERP (snippet que aparece en results). No scrapear directamente.</li>
+    </ol>
+</div>
+
+<h2>📧 Outreach / Cold Email — Estrategia y Herramientas</h2>
+<table>
+<thead><tr><th>Herramienta</th><th>Precio</th><th>Free Tier</th><th>Email Finder</th><th>Verificación</th><th>Automatización</th><th>Recomendación</th></tr></thead>
+<tbody>
+<tr><td><strong>Hunter.io</strong></td><td class="price">$49/mes (500 searches)</td><td>25 searches/mes</td><td>✅ Dominio + pattern</td><td>✅ Incluida</td><td>❌ No</td><td>Mejor email finder. Para miCompa: la API de verificación es gratis hasta cierto límite.</td></tr>
+<tr><td><strong>Apollo.io</strong></td><td class="price">$49/mes</td><td>50 credits/mes</td><td>✅ B2B database</td><td>✅ Integrada</td><td>✅ Sequences</td><td>Demasiado B2B/enterprise. No local businesses.</td></tr>
+<tr><td><strong>Instantly.ai</strong></td><td class="price">$37/mes</td><td>14-day trial</td><td>❌ No</td><td>❌ No</td><td>✅ Sequences + warmup</td><td>Solo multiplataforma. Ideal para envío de emails en masa.</td></tr>
+<tr><td><strong>Lemlist</strong></td><td class="price">$59/mes</td><td>14-day trial</td><td>❌ No</td><td>❌ No</td><td>✅ Personalización</td><td>Personalización de imágenes + texto. Caro.</td></tr>
+<tr><td><strong>Mailmeteor (Gmail)</strong></td><td class="price">Free (50 emails/día) / $9/mes</td><td>50/día</td><td>❌ No</td><td>❌ No</td><td>✅ Mail merge desde Gmail</td><td>🏆 Para arrancar: Mailmeteor free + Gmail = envíos personales sin parecer spam.</td></tr>
+<tr><td><strong>GMass</strong></td><td class="price">$19.95/mes</td><td>No free</td><td>❌ No</td><td>❌ No</td><td>✅ Mail merge + tracking</td><td>Alternativa a Mailmeteor. Similar pricing.</td></tr>
+</tbody>
+</table>
+
+<div class="success-box">
+    <strong>📧 Estrategia Outreach para miCompaWeb:</strong>
+    <ul>
+        <li><b>M2 produce el email draft</b> (como lo hace M1 ahora con generate_opening_angle), pero mejorado con análisis de competencia y keyword research.</li>
+        <li><b>Envío manual (fase 1):</b> Mailmeteor free + Gmail. El usuario revisa el draft de miCompa, lo personaliza, y envía. 50 emails/día = suficiente para un freelancer.</li>
+        <li><b>Verificación de email:</b> Hunter.io free (25/mes) o NeverBounce ($0.003/verificación). Solo verificar top leads (&lt;25 leads hot/warm).</li>
+        <li><b>Bounce rate tracking:</b> Si un email bounces, marcar lead como "email inválido" y no enviar más.</li>
+        <li><b>Nunca automatizar envío sin revisión humana:</b> el draft generado por Groq se muestra al usuario para aprobación antes de enviar.</li>
+    </ul>
+</div>
+
+<h2>📋 Checklist de Features por Módulo (Recomendaciones Finales)</h2>
+
+<h3>M1 PROSPECTION — Qué falta / Mejoras</h3>
+<div class="grid-2">
+    <div class="card">
+        <span class="tag tag-must">INMEDIATO</span><br>
+        <strong>InputGuardian</strong> — Validación de inputs, descarte de cadenas, normalización de nicho.<br>
+        <strong>TUI Complet</strong> — Rich Live + wizard + closing_menu.<br>
+        <strong>CompetitorService</strong> — Análisis de competidores de la misma búsqueda.<br>
+        <strong>CostGuardian</strong> — Límite diario de $2.00.<br>
+    </div>
+    <div class="card">
+        <span class="tag tag-cheap">PHASE 2</span><br>
+        <strong>Social Media Audit (basado)</strong> — Extracción de Instagram/YouTube/Facebook básica.<br>
+        <strong>Review Sentiment Analysis</strong> — Con LLM o heurístico.<br>
+        <strong>Opening Angle mejorado</strong> — Multi-idioma, multi-formato.<br>
+    </div>
+</div>
+
+<h3>M2 ANALYZE/SPY — Features Necesarios</h3>
+<div class="grid-2">
+    <div class="card">
+        <span class="tag tag-must">CORE</span><br>
+        <strong>Competitor Deep Analysis</strong> — Scrapear top 10 competidores del cliente, extraer: keywords ranking, backlinks (Semrush free / Ahrefs WMT), tech stack, copy analysis.<br>
+        <strong>SEO Técnico</strong> — Arquitectura de site (sitemap, robots.txt, Core Web Vitals, schema.org), Mobile Score.<br>
+        <strong>Content Gap Analysis</strong> — Qué keywords tienen los competidores y el cliente no. Identificar oportunidades semánticas.<br>
+        <strong>Brand Sentiment</strong> — Menciones web, mentions en Google News, review platforms (Trustpilot, Google Maps).<br>
+    </div>
+    <div class="card">
+        <span class="tag tag-cheap">EXPANSION</span><br>
+        <strong>Social Presence Report</strong> — YouTube (API gratis), Instagram (Instaloader), Facebook (scraper), TikTok (omitir v1).<br>
+        <strong>Backlink Profile</strong> — Ahrefs WMT free (solo para sites del cliente una vez creados). DataForSEO para análisis de competencia.<br>
+        <strong>Technical SEO Audit</strong> — Integrar python-seo-analyzer u OnCrawl free tier (100 URLs/mes).<br>
+    </div>
+</div>
+
+<h3>M3 KEYWORD RESEARCH — Features</h3>
+<div class="card">
+    <span class="tag tag-must">CORE</span><br>
+    <strong>Google Keyword Planner</strong> — Volumen, competencia, CPC (gratis). Automatizable vía Google Ads API (necesita cuenta).<br>
+    <strong>SERP Scraping</strong> — "People Also Ask", "Related Searches", featured snippets (Playwright + BeautifulSoup = $0).<br>
+    <strong>Competitor Keyword Extraction</strong> — Scrapear meta keywords, H1-H6, title tags de competidores.<br>
+    <strong>DataForSEO</strong> — Para keywords de competencia (pay-as-you-go, barato).<br>
+    <strong>Ubersuggest Lifetime</strong> — Análisis manual de content ideas y backlinks (screenshot/exports con Playwright).<br>
+    <strong>LLM Clustering</strong> — Groq clasifica keywords por intención (informational, transactional, navigational) y propone grupos semánticos.<br>
+</div>
+
+<h3>M4 PROTOTYPING — Features</h3>
+<div class="grid-2">
+    <div class="card">
+        <span class="tag tag-must">CORE</span><br>
+        <strong>v0.dev Integration</strong> — Generar componentes React desde prompts del cliente.<br>
+        <strong>Relume AI</strong> — Sitemap + wireframes + copy estructurado.<br>
+        <strong>Next.js + TinaCMS</strong> — Stack favorito para clientes medianos (headless CMS, gratis en Vercel).<br>
+        <strong>WordPress</strong> — Plantillas personalizadas para clientes que insisten en WP.<br>
+    </div>
+    <div class="card">
+        <span class="tag tag-cheap">CHATBOT</span><br>
+        <strong>Next.js sites:</strong> Vercel AI SDK + Groq local = $0.<br>
+        <strong>WordPress sites:</strong> Tidio free → upgrade a pro ($29/mes) cuando crezca.<br>
+        <strong>Alternativa:</strong> Botpress self-hosted en Vercel/Node para control total.<br>
+    </div>
+</div>
+
+<h2>🗺️ Stack Tecnológico Recomendado Final</h2>
+<table>
+<thead><tr><th>Capa</th><th>Tool</th><th>Costo</th><th>Cuándo</th></tr></thead>
+<tbody>
+<tr><td><strong>CLI / Backend</strong></td><td>Python 3.12, Typer, Rich, Pydantic v2</td><td>$0</td><td>Siempre</td></tr>
+<tr><td><strong>Web Scraping</strong></td><td>httpx + BeautifulSoup + Playwright (crawl4ai)</td><td>$0 local</td><td>M1/M2</td></tr>
+<tr><td><strong>Scraping API</strong></td><td>ScraperAPI / Scrapingdog</td><td>$30-49/mes</td><td>Cuando Groq limita o M2 crece</td></tr>
+<tr><td><strong>SEO Data</strong></td><td>DataForSEO (pay-as-you-go)</td><td>~$0.001/query</td><td>M2/M3</td></tr>
+<tr><td><strong>Keyword Tool</strong></td><td>Google Keyword Planner + Ubersuggest Lifetime</td><td>$0 + $99 único</td><td>M3</td></tr>
+<tr><td><strong>LLM Principal</strong></td><td>Groq API (free tier / cheap pay)</td><td>~$0</td><td>M1/M2/M3/M4</td></tr>
+<tr><td><strong>LLM Backup 1</strong></td><td>Ollama (local)</td><td>$0</td><td>Offline / fallback</td></tr>
+<tr><td><strong>LLM Backup 2</strong></td><td>Google Gemini API (free tier)</td><td>$0</td><td>M2 análisis largos</td></tr>
+<tr><td><strong>LLM Backup 3</strong></td><td>HeuristicClient</td><td>$0</td><td>Siempre disponible</td></tr>
+<tr><td><strong>Hosting Proyectos</strong></td><td>Vercel (Hobby Plan)</td><td>$0</td><td>Next.js</td></tr>
+<tr><td><strong>CMS</strong></td><td>TinaCMS (gratis) / WordPress (self-hosted)</td><td>$0</td><td>M4 deliverables</td></tr>
+<tr><td><strong>Chatbot Next.js</strong></td><td>Vercel AI SDK + Groq</td><td>$0</td><td>M4</td></tr>
+<tr><td><strong>Chatbot WP</strong></td><td>Tidio (free)</td><td>$0</td><td>M4</td></tr>
+<tr><td><strong>BD Projectos</strong></td><td>SQLite local / NocoDB</td><td>$0</td><td>Siempre</td></tr>
+<tr><td><strong>Orquestador Flujos</strong></td><td>n8n (self-hosted)</td><td>$0</td><td>Automatización futura</td></tr>
+<tr><td><strong>Outreach</strong></td><td>Mailmeteor (Gmail free)</td><td>$0</td><td>M2</td></tr>
+<tr><td><strong>Email Finder</strong></td><td>Hunter.io (free tier)</td><td>$0</td><td>M1</td></tr>
+<tr><td><strong>Social Audit</strong></td><td>YouTube API + Instaloader + facebook-scraper</td><td>$0</td><td>M2</td></tr>
+</tbody>
+</table>
+
+<h2>💰 Gasto Mensual Estimado (Para ti solo)</h2>
+<table>
+<thead><tr><th>Concepto</th><th>Fase 1 (Solo tú)</th><th>Fase 2 (1er cliente)</th><th>Fase 3 (Escala)</th></tr></thead>
+<tbody>
+<tr><td>Google Places API</td><td>$0 (fixture) / ~$2 (real)</td><td>~$5-10/mes</td><td>~$20/mes</td></tr>
+<tr><td>Groq API</td><td>$0 (free tier)</td><td>$0-5/mes</td><td>$10-20/mes</td></tr>
+<tr><td>ScraperAPI</td><td>$0</td><td>$30-49/mes</td><td>$49/mes</td></tr>
+<tr><td>DataForSEO</td><td>$0</td><td>$5/mes</td><td>$20/mes</td></tr>
+<tr><td>Hunter.io</td><td>$0 (25/mes)</td><td>$0</td><td>$49/mes</td></tr>
+<tr><td>Ubersuggest Lifetime</td><td>$0 (todavía no)</td><td>$0 (una vez)</td><td>$0</td></tr>
+<tr><td>Tidio Pro (cliente WP)</td><td>$0</td><td>$0 (cliente paga)</td><td>$0 (cliente paga)</td></tr>
+<tr><td>Vercel Hobby</td><td>$0</td><td>$0</td><td>$0</td></tr>
+<tr><td><strong>TOTAL</strong></td><td><strong class="price">$0-2/mes</strong></td><td><strong class="price">$35-65/mes</strong></td><td><strong class="price">$100-150/mes</strong></td></tr>
+</tbody>
+</table>
+
+<h2>⚠️ Advertencias Legales / Éticas</h2>
+<div class="warning-box">
+    <ul>
+        <li><strong>Google Maps scraping:</strong> Los TOS de Google prohíben scraping automatizado. miCompaWeb usa Places API oficial (legal). Outscraper/G Maps Extractor operan en grey zone. Siempre prefiere API oficial.</li>
+        <li><strong>LinkedIn scraping:</strong> CATEGÓRICAMENTE PROHIBIDO por TOS. Multas severas con precedentes. NUNCA scrapear LinkedIn directamente.</li>
+        <li><strong>TikTok scraping:</strong> Difícil + riesgo legal. Omitir.</li>
+        <li><strong>Términos de uso:</strong> Siempre cumplir robots.txt. Rate limiting en scraping. Nunca DDoSear sitios.</li>
+        <li><strong>GDPR / CCPA:</strong> Si recolectas emails de sitios web públicos, es legal. Pero enviar emails no solicitados sin opt-out viola CAN-SPAM (EEUU) y LSSI (España/Europe). SOLUCIÓN: miCompaWeb es "draft generator". La decisión de envío es 100% del usuario.</li>
+        <li><strong>Facebook scraping:</strong> Facebook Graph API para datos públicos es legal. Scraper no-oficial viola TOS de Facebook/Meta.</li>
+    </ul>
+</div>
+
+<footer>
+    <p>📊 Informe generado para <strong>miCompaWeb</strong> — Investigación de mercado 2025/26</p>
+    <p>🤖 Procesado con búsquedas SearXNG, conocimiento de mercado, y análisis de URLs vivas</p>
+    <p style="margin-top:10px;">📁 Ubicación: <code>~/projects/micompaweb/docs/informe-competencia.html</code></p>
+</footer>
+
+</div>
+</body>
+</html>
