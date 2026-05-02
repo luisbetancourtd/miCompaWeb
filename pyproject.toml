@@ -145,6 +145,9 @@ python_functions = ["test_*"]
 markers = [
     "slow: marks tests as slow (deselect with '-m not slow')",
     "integration: marks integration tests involving external services",
+    "unit: marks unit tests",
+    "e2e: marks end-to-end tests",
+    "needs_llm: marks tests that require LLM connectivity",
 ]
 addopts = [
     "--strict-markers",

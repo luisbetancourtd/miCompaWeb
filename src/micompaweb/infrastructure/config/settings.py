@@ -3,7 +3,7 @@
 from typing import Optional
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
@@ -82,10 +82,10 @@ class Settings(BaseSettings):
         alias="ENABLE_NOCODB_SYNC",
     )
 
-    class Config:
-        """Pydantic config."""
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+    )
 
     @property
     def has_places_api(self) -> bool:
