@@ -151,13 +151,15 @@ class ProspectingService:
             # === STAGE 5: Revenue Estimation ===
             self._estimate_revenue(leads, project)
 
+            # Stats deben estar listas antes del export para que el HTML los refleje
+            self._update_stats(project, leads)
+
             # === STAGE 6: Export ===
             await self._export_results(leads, project)
 
             # === COMPLETE ===
             project.status = ProjectStatus.COMPLETED
             project.completed_at = datetime.now()
-            self._update_stats(project, leads)
 
             return leads
 
@@ -315,38 +317,6 @@ class ProspectingService:
                 print(f"Export failed for {exporter.format_name}: {e}")
 
         self._notify_progress("export", 1, 1)
-
-    def _update_stats(self, project: Project, leads: List[Lead]) -> None:
-        """Actualiza estadísticas del proyecto."""
-        project.stats.total_leads = len(leads)
-        project.stats.ultra_hot_leads = sum(
-            1 for l in leads if l.priority == "ULTRA HOT"
-        )
-        project.stats.hot_leads = sum(
-            1 for l in leads if l.priority == "HOT"
-        )
-        project.stats.warm_leads = sum(
-            1 for l in leads if l.priority == "WARM"
-        )
-        project.stats.cold_leads = sum(
-            1 for l in leads if l.priority == "COLD"
-        )
-        project.stats.discarded_leads = sum(
-            1 for l in leads if l.disqualified
-        )
-
-        # Market health score
-        if leads:
-            no_website_pct = sum(
-                1 for l in leads if l.website_status == "none"
-            ) / len(leads)
-            project.market_health_score = no_website_pct * 100
-
-        # Revenue totals
-        total_low = sum(l.revenue_loss.monthly_low for l in leads)
-        total_high = sum(l.revenue_loss.monthly_high for l in leads)
-        project.total_estimated_revenue_loss_low = total_low
-        project.total_estimated_revenue_loss_high = total_high
 
     def _validate_inputs(self, project: Project) -> None:
         """STAGE 0: Valida inputs con InputGuardian si está disponible."""
