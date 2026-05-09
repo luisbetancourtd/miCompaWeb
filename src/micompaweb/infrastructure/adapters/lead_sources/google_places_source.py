@@ -62,7 +62,7 @@ class GooglePlacesSource:
 
         # 2. Búsqueda de lugares cercanos
         places = await self._search_nearby(
-            coords, niche, radius_meters, max_results, language
+            coords, niche, location, radius_meters, max_results, language
         )
 
         # 3. Normalizar a modelo Lead
@@ -174,11 +174,18 @@ class GooglePlacesSource:
         self,
         coords: tuple[float, float],
         keyword: str,
+        location: str,
         radius: int,
         max_results: int,
         language: str,
     ) -> List[Dict[str, Any]]:
-        """Busca lugares usando Places API v1 searchText con fallbacks robustos."""
+        """Busca lugares usando Places API v1 searchText.
+
+        textQuery incluye keyword + location para que Google entienda el
+        contexto geografico. Usa locationBias (sesgo) en vez de
+        locationRestriction (corte duro) para evitar 400 en queries
+        que producen pocos resultados dentro del radio exacto.
+        """
         url = f"{self.PLACES_API_URL}/places:searchText"
 
         headers = {
@@ -192,61 +199,46 @@ class GooglePlacesSource:
                                "places.editorialSummary,places.businessStatus",
         }
 
-        def _build_body(restriction_key: str) -> dict:
-            body: dict = {
-                "textQuery": keyword,
-                "languageCode": language,
-                "maxResultCount": min(max_results, 20),
-            }
-            if restriction_key == "locationRestriction":
-                body["locationRestriction"] = {
-                    "circle": {
-                        "center": {"latitude": coords[0], "longitude": coords[1]},
-                        "radius": float(min(radius, 50000)),
-                    }
+        text_query = f"{keyword} in {location}"
+
+        body: dict = {
+            "textQuery": text_query,
+            "languageCode": language,
+            "maxResultCount": min(max_results, 20),
+            "rankPreference": "DISTANCE",
+            "locationBias": {
+                "circle": {
+                    "center": {"latitude": coords[0], "longitude": coords[1]},
+                    "radius": float(min(radius, 50000)),
                 }
-            elif restriction_key == "locationBias":
-                body["locationBias"] = {
-                    "circle": {
-                        "center": {"latitude": coords[0], "longitude": coords[1]},
-                        "radius": float(min(radius, 50000)),
-                    }
-                }
-            return body
+            },
+        }
 
         client = await self._get_client()
-        last_error = None
 
-        # Intentar 1: locationRestriction (estricto)
-        for restriction in ("locationRestriction", "locationBias", None):
-            try:
-                body = _build_body(restriction) if restriction else {
-                    "textQuery": f"{keyword} in {coords[0]},{coords[1]}",
-                    "languageCode": language,
-                    "maxResultCount": min(max_results, 20),
-                }
-                response = await client.post(url, headers=headers, json=body)
-                if response.status_code == 200:
-                    data = response.json()
-                    places = data.get("places", [])
-                    return [self._convert_place_v1_to_legacy(p) for p in places]
-                elif response.status_code == 400:
-                    err_body = response.text
-                    last_error = f"400 Bad Request (restriction={restriction}): {err_body[:500]}"
-                    continue  # probar siguiente fallback
-                else:
-                    response.raise_for_status()
-            except Exception as e:
-                last_error = str(e)
-                continue
+        try:
+            response = await client.post(url, headers=headers, json=body)
+            if response.status_code == 400:
+                err_body = response.text[:800]
+                raise LeadSourceError(
+                    f"Google Places API returned 400 Bad Request. "
+                    f"Response: {err_body}. "
+                    f"Common causes: (1) API key missing 'Places API (New)' permission, "
+                    f"(2) billing not enabled, (3) quota exceeded, "
+                    f"(4) textQuery '{text_query}' not understood by Places API."
+                )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise LeadSourceError(
+                f"Google Places API HTTP error: {e.response.status_code} "
+                f"for url {url}. Response: {e.response.text[:500]}"
+            ) from e
 
-        # Si nada funcionó, reportar error detallado
-        raise LeadSourceError(
-            f"Google Places API (searchText) failed after all fallbacks. "
-            f"Last error: {last_error}. "
-            f"Common causes: (1) API key missing 'Places API (New)' permission, "
-            f"(2) billing not enabled, (3) quota exceeded."
-        )
+        data = response.json()
+        places = data.get("places", [])
+
+        # Convertir formato v1 a formato legacy compatible
+        return [self._convert_place_v1_to_legacy(p) for p in places]
 
     def _convert_place_v1_to_legacy(self, place: Dict[str, Any]) -> Dict[str, Any]:
         """Convierte formato Places API v1 a formato legacy."""
