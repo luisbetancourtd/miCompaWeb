@@ -178,7 +178,7 @@ class GooglePlacesSource:
         max_results: int,
         language: str,
     ) -> List[Dict[str, Any]]:
-        """Busca lugares usando Places API v1 searchText (más flexible que searchNearby)."""
+        """Busca lugares usando Places API v1 searchText con fallbacks robustos."""
         url = f"{self.PLACES_API_URL}/places:searchText"
 
         headers = {
@@ -192,27 +192,61 @@ class GooglePlacesSource:
                                "places.editorialSummary,places.businessStatus",
         }
 
-        body = {
-            "textQuery": keyword,
-            "locationRestriction": {
-                "circle": {
-                    "center": {"latitude": coords[0], "longitude": coords[1]},
-                    "radius": float(min(radius, 50000)),  # Máximo 50km
+        def _build_body(restriction_key: str) -> dict:
+            body: dict = {
+                "textQuery": keyword,
+                "languageCode": language,
+                "maxResultCount": min(max_results, 20),
+            }
+            if restriction_key == "locationRestriction":
+                body["locationRestriction"] = {
+                    "circle": {
+                        "center": {"latitude": coords[0], "longitude": coords[1]},
+                        "radius": float(min(radius, 50000)),
+                    }
                 }
-            },
-            "languageCode": language,
-            "maxResultCount": min(max_results, 20),  # API v1 max is 20 per call
-        }
+            elif restriction_key == "locationBias":
+                body["locationBias"] = {
+                    "circle": {
+                        "center": {"latitude": coords[0], "longitude": coords[1]},
+                        "radius": float(min(radius, 50000)),
+                    }
+                }
+            return body
 
         client = await self._get_client()
-        response = await client.post(url, headers=headers, json=body)
-        response.raise_for_status()
+        last_error = None
 
-        data = response.json()
-        places = data.get("places", [])
+        # Intentar 1: locationRestriction (estricto)
+        for restriction in ("locationRestriction", "locationBias", None):
+            try:
+                body = _build_body(restriction) if restriction else {
+                    "textQuery": f"{keyword} in {coords[0]},{coords[1]}",
+                    "languageCode": language,
+                    "maxResultCount": min(max_results, 20),
+                }
+                response = await client.post(url, headers=headers, json=body)
+                if response.status_code == 200:
+                    data = response.json()
+                    places = data.get("places", [])
+                    return [self._convert_place_v1_to_legacy(p) for p in places]
+                elif response.status_code == 400:
+                    err_body = response.text
+                    last_error = f"400 Bad Request (restriction={restriction}): {err_body[:500]}"
+                    continue  # probar siguiente fallback
+                else:
+                    response.raise_for_status()
+            except Exception as e:
+                last_error = str(e)
+                continue
 
-        # Convertir formato v1 a formato legacy compatible
-        return [self._convert_place_v1_to_legacy(p) for p in places]
+        # Si nada funcionó, reportar error detallado
+        raise LeadSourceError(
+            f"Google Places API (searchText) failed after all fallbacks. "
+            f"Last error: {last_error}. "
+            f"Common causes: (1) API key missing 'Places API (New)' permission, "
+            f"(2) billing not enabled, (3) quota exceeded."
+        )
 
     def _convert_place_v1_to_legacy(self, place: Dict[str, Any]) -> Dict[str, Any]:
         """Convierte formato Places API v1 a formato legacy."""
