@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>miCompaWeb — Outreach</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.slate.min.css">
+  <style>
+    :root { --primary: #f59e0b; --primary-hover: #d97706; }
+    .brand { font-weight: 800; letter-spacing: -0.03em; color: var(--primary); }
+    .badge { display: inline-block; padding: .15rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; text-transform: uppercase; }
+    .badge-draft { background: #374151; color: #9ca3af; }
+    .badge-scheduled { background: #064e3b; color: #34d399; }
+    .badge-sent { background: #1e3a8a; color: #60a5fa; }
+    .badge-failed { background: #450a0a; color: #f87171; }
+    .actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .actions button, .actions a[role="button"] { padding: .35rem .7rem; font-size: .8rem; }
+    .stat { text-align: center; }
+    .stat figure { font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0; }
+    .stat figcaption { font-size: .85rem; color: var(--muted-color); text-transform: uppercase; letter-spacing: .05em; }
+    .email-client { background: #111827; border: 1px solid #374151; border-radius: .5rem; padding: 1.5rem; max-width: 600px; margin: 1rem auto; }
+    .email-client header { border-bottom: 1px solid #374151; padding-bottom: .75rem; margin-bottom: 1rem; }
+    .email-client .field { color: #9ca3af; font-size: .9rem; margin-bottom: .25rem; }
+    .email-client .field strong { color: #e5e7eb; }
+  </style>
+</head>
+<body>
+  <nav class="container-fluid">
+    <ul><li><span class="brand">miCompaWeb</span></li></ul>
+    <ul>
+      <li><a href="index.html" class="contrast" style="color:var(--primary)">Dashboard</a></li>
+      <li><a href="logs.html">Historial</a></li>
+      <li><a href="settings.html">Config</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <h1>Outreach <span style="font-weight:300;color:var(--muted-color)">Admin</span></h1>
+    <p style="color:var(--muted-color)">Gestiona secuencias de prospección. Edita, programa y envía emails.</p>
+
+    <div class="grid" style="margin: 2rem 0;">
+      <article class="stat">
+        <figure>12</figure>
+        <figcaption>Activas</figcaption>
+      </article>
+      <article class="stat">
+        <figure>3</figure>
+        <figcaption>Hoy</figcaption>
+      </article>
+      <article class="stat">
+        <figure>148</figure>
+        <figcaption>Enviados</figcaption>
+      </article>
+      <article class="stat">
+        <figure>2</figure>
+        <figcaption>Fallidos</figcaption>
+      </article>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h2 style="margin:0">Secuencias</h2>
+      <div>
+        <button onclick="alert('Mockup: ir a wizard')">+ Nueva secuencia</button>
+        <a href="editor.html" role="button" class="secondary">+ Desde lead existente</a>
+      </div>
+    </div>
+
+    <figure>
+      <table role="grid">
+        <thead>
+          <tr>
+            <th>Lead</th>
+            <th>Nicho</th>
+            <th>Estado</th>
+            <th>Próximo envío</th>
+            <th style="min-width:220px">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Plomería Express</strong><br><small style="color:var(--muted-color)">contacto@plomeriaexpress.com</small></td>
+            <td>Plumbing</td>
+            <td><span class="badge badge-scheduled">Scheduled</span></td>
+            <td>Hoy 14:00</td>
+            <td class="actions">
+              <a href="editor.html?seq=101" role="button" class="secondary">Editar</a>
+              <a href="preview.html?seq=101" role="button">Preview</a>
+              <button class="outline" onclick="alert('Mockup: cancelar secuencia')">Cancelar</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>TechFix Miami</strong><br><small style="color:var(--muted-color)">info@techfixmia.com</small></td>
+            <td>Tech Repair</td>
+            <td><span class="badge badge-draft">Draft</span></td>
+            <td>—</td>
+            <td class="actions">
+              <a href="editor.html?seq=102" role="button" class="secondary">Editar</a>
+              <a href="preview.html?seq=102" role="button">Preview</a>
+              <button class="outline" onclick="alert('Mockup: eliminar draft')">Eliminar</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Luxe Landscapes</strong><br><small style="color:var(--muted-color)">hello@luxeland.com</small></td>
+            <td>Landscaping</td>
+            <td><span class="badge badge-sent">Sent D1</span></td>
+            <td>2026-05-06 09:00</td>
+            <td class="actions">
+              <a href="editor.html?seq=103" role="button" class="secondary">Editar resto</a>
+              <a href="preview.html?seq=103" role="button">Preview</a>
+              <button class="outline" onclick="alert('Mockup: pausar')">Pausar</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>CleanPro Office</strong><br><small style="color:var(--muted-color)">ceo@cleanpro.com</small></td>
+            <td>Commercial Cleaning</td>
+            <td><span class="badge badge-failed">Failed</span></td>
+            <td>—</td>
+            <td class="actions">
+              <a href="editor.html?seq=104" role="button" class="secondary">Revisar</a>
+              <button onclick="alert('Mockup: reenviar')">Reintentar</button>
+              <button class="outline" onclick="alert('Mockup: cancelar')">Descartar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </figure>
+
+    <div style="margin-top:2rem;text-align:center;">
+      <button class="contrast" style="background: var(--primary); border-color: var(--primary); color: #111;" onclick="alert('Mockup: ejecutar scheduler ahora')">
+        Ejecutar Scheduler Ahora
+      </button>
+      <br><small style="color:var(--muted-color)">Última ejecución: hace 45 min</small>
+    </div>
+  </main>
+
+  <footer class="container" style="text-align:center;padding:2rem 0;color:var(--muted-color);font-size:.8rem;">
+    miCompaWeb v1.2 — Outreach Module (Mockup)
+  </footer>
+</body>
+</html>

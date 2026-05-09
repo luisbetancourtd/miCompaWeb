@@ -306,7 +306,10 @@ class ProspectingService:
                     format=exporter.format_name,
                     language=project.config.target_language,
                 )
-                result = await exporter.export(leads, project, config)
+                if asyncio.iscoroutinefunction(exporter.export):
+                    result = await exporter.export(leads, project, config)
+                else:
+                    result = exporter.export(leads, project, config)
                 print(f"[Export] {result.file_path} ({result.file_size_bytes} bytes)")
             except Exception as e:
                 print(f"Export failed for {exporter.format_name}: {e}")

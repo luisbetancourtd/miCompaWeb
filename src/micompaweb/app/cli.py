@@ -403,6 +403,14 @@ def _launch_m1(
         console.print(f"\n[red]Error:[/] {e}")
         raise typer.Exit(1)
 
+    # Actualizar stats del proyecto para que HTML/template los muestre correctamente
+    project.stats.total_leads = len(leads)
+    project.stats.ultra_hot_leads = sum(1 for l in leads if l.priority == PriorityTier.ULTRA_HOT)
+    project.stats.hot_leads = sum(1 for l in leads if l.priority == PriorityTier.HOT)
+    project.stats.warm_leads = sum(1 for l in leads if l.priority == PriorityTier.WARM)
+    project.stats.cold_leads = sum(1 for l in leads if l.priority == PriorityTier.COLD)
+    project.stats.total_scanned = len(leads)
+
     # Mostrar closing screen (sync, fuera del asyncio loop)
     from micompaweb.presentation.tui import ClosingScreen, ClosingMenu
     cs = ClosingScreen()

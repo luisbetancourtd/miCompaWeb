@@ -19,7 +19,7 @@ from micompaweb.application.ports.exporter import (
 class CSVExporter:
     """Exporta leads a CSV para análisis en Excel/Sheets."""
 
-    async def export(
+    def export(
         self,
         leads: List[Lead],
         project: Project,

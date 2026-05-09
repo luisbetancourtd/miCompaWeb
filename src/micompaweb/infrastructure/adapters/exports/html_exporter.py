@@ -41,7 +41,7 @@ class HTMLReportExporter:
                 )
         return self._env
 
-    async def export(
+    def export(
         self,
         leads: List[Lead],
         project: Project,

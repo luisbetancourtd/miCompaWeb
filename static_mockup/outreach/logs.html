@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historial — miCompaWeb Outreach</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.slate.min.css">
+  <style>
+    :root { --primary: #f59e0b; --primary-hover: #d97706; }
+    .brand { font-weight: 800; letter-spacing: -0.03em; color: var(--primary); }
+    .badge { display: inline-block; padding: .15rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; text-transform: uppercase; }
+    .badge-ok { background: #064e3b; color: #34d399; }
+    .badge-bounce { background: #450a0a; color: #f87171; }
+    .badge-open { background: #1e3a8a; color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <nav class="container-fluid">
+    <ul><li><a href="index.html" class="brand">miCompaWeb</a></li></ul>
+    <ul>
+      <li><a href="index.html">Dashboard</a></li>
+      <li><a href="editor.html">Nueva secuencia</a></li>
+      <li><a href="settings.html">Config</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <h1>Historial de Envíos</h1>
+    <p style="color:var(--muted-color)">148 emails enviados en los últimos 30 días.</p>
+
+    <div class="grid" style="margin-bottom:1.5rem">
+      <div>
+        <label for="filter-status">Filtrar por estado</label>
+        <select id="filter-status">
+          <option>Todos</option>
+          <option>Entregados</option>
+          <option>Abiertos</option>
+          <option>Rebotados</option>
+        </select>
+      </div>
+      <div>
+        <label for="filter-date">Fecha desde</label>
+        <input type="date" id="filter-date" value="2026-04-05">
+      </div>
+      <div>
+        <label style="visibility:hidden">Buscar</label>
+        <input type="search" placeholder="Buscar lead...">
+      </div>
+    </div>
+
+    <figure>
+      <table role="grid">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Lead</th>
+            <th>Asunto</th>
+            <th>Día</th>
+            <th>Estado</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2026-05-02 14:23</td>
+            <td>Plomería Express</td>
+            <td>Tu nueva web lista en 48h</td>
+            <td>D1</td>
+            <td><span class="badge badge-ok">Delivered</span></td>
+            <td><button class="secondary outline" style="font-size:.75rem" onclick="alert('Mockup: resend / view raw')">Ver raw</button></td>
+          </tr>
+          <tr>
+            <td>2026-05-02 14:23</td>
+            <td>Luxe Landscapes</td>
+            <td>A propósito de tu web...</td>
+            <td>D3</td>
+            <td><span class="badge badge-open">Opened</span></td>
+            <td>Abierto 2 veces, último hoy 09:15</td>
+          </tr>
+          <tr>
+            <td>2026-05-01 09:00</td>
+            <td>CleanPro Office</td>
+            <td>Tu nuevo sitio de reservas</td>
+            <td>D1</td>
+            <td><span class="badge badge-bounce">Bounced</span></td>
+            <td><button class="secondary outline" style="font-size:.75rem" onclick="alert('Mockup: corregir email')">Corregir email</button></td>
+          </tr>
+          <tr style="background:#111827">
+            <td colspan="6" style="text-align:center;color:var(--muted-color);padding:1rem">... 145 envíos más · <a href="#">Cargar más</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </figure>
+
+    <div style="margin-top:2rem">
+      <h3>Exportar logs</h3>
+      <div class="grid" style="max-width:500px">
+        <button class="secondary outline" onclick="alert('Mockup: export CSV')">📄 CSV</button>
+        <button class="secondary outline" onclick="alert('Mockup: export JSON')">📄 JSON</button>
+        <button class="secondary outline" onclick="alert('Mockup: export full report')">📊 Reporte HTML</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="container" style="text-align:center;padding:2rem 0;color:var(--muted-color);font-size:.8rem">
+    miCompaWeb v1.2 — Outreach Module (Mockup)
+  </footer>
+</body>
+</html>

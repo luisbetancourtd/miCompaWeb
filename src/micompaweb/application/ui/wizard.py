@@ -119,10 +119,16 @@ class Wizard:
         """Pregunta cantidad de leads."""
         result = questionary.select(
             "Máximo de leads a prospectar:",
-            choices=[5, 10, 20, 50, 100],
-            default=20,
+            choices=[
+                questionary.Choice("5", value=5),
+                questionary.Choice("10", value=10),
+                questionary.Choice("20", value=20),
+                questionary.Choice("50", value=50),
+                questionary.Choice("100", value=100),
+            ],
+            default=questionary.Choice("20", value=20),
         ).ask()
-        return result if isinstance(result, int) else int(result)
+        return int(result) if result is not None else 20
 
     def welcome(self) -> None:
         """Muestra mensaje de bienvenida del wizard."""

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Secuencia — miCompaWeb Outreach</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.slate.min.css">
+  <style>
+    :root { --primary: #f59e0b; --primary-hover: #d97706; }
+    .brand { font-weight: 800; letter-spacing: -0.03em; color: var(--primary); }
+    .day-card { background: #111827; border: 1px solid #374151; border-radius: .5rem; margin-bottom: 1rem; }
+    .day-card header { display: flex; justify-content: space-between; align-items: center; padding: .75rem 1rem; background: #1f2937; border-radius: .5rem .5rem 0 0; border-bottom: 1px solid #374151; }
+    .day-card header h3 { margin: 0; font-size: 1rem; }
+    .day-card .body { padding: 1rem; }
+    .actions-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .unsaved { color: #f87171; font-size: .85rem; display: none; }
+    .unsaved.visible { display: inline; }
+  </style>
+</head>
+<body>
+  <nav class="container-fluid">
+    <ul><li><a href="index.html" class="brand">miCompaWeb</a></li></ul>
+    <ul>
+      <li><a href="index.html">Dashboard</a></li>
+      <li><a href="logs.html">Historial</a></li>
+      <li><a href="settings.html">Config</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <div class="actions-top">
+      <div>
+        <h1 style="margin:0">Editar Secuencia</h1>
+        <p style="margin:.25rem 0 0 0;color:var(--muted-color)">Plomería Express · <span class="unsaved visible" id="unsavedBadge">Cambios sin guardar</span></p>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <a href="preview.html?seq=101" role="button">Preview</a>
+        <button style="background:var(--primary);border-color:var(--primary);color:#111" onclick="alert('Mockup: guardar y programar')">Guardar y Programar</button>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-bottom:1.5rem">
+      <div>
+        <label for="lead">Lead</label>
+        <input type="text" id="lead" value="Plomería Express" readonly>
+      </div>
+      <div>
+        <label for="niche">Nicho</label>
+        <input type="text" id="niche" value="Plumbing" readonly>
+      </div>
+      <div>
+        <label for="template">Template base</label>
+        <select id="template">
+          <option>default_5day</option>
+          <option>default_7day</option>
+          <option>custom</option>
+        </select>
+      </div>
+    </div>
+
+    <h2 style="margin-top:2rem">Emails de la secuencia</h2>
+
+    <article class="day-card">
+      <header>
+        <h3>Día 1 — Preview</h3>
+        <div style="display:flex;gap:.5rem">
+          <button class="secondary outline" style="font-size:.75rem;padding:.25rem .5rem" onclick="alert('Mockup: duplicar día')">Duplicar</button>
+          <button class="secondary outline" style="font-size:.75rem;padding:.25rem .5rem" onclick="alert('Mockup: eliminar día')">Eliminar</button>
+        </div>
+      </header>
+      <div class="body">
+        <label for="s1">Asunto</label>
+        <input type="text" id="s1" value="Tu nueva web lista en 48h — Plomería Express" oninput="document.getElementById('unsavedBadge').classList.add('visible')">
+
+        <label for="b1" style="margin-top:.75rem">Cuerpo del email (Jinja2 + Markdown)</label>
+        <textarea id="b1" rows="8" oninput="document.getElementById('unsavedBadge').classList.add('visible')">Hola {{ lead.contact_name | default('equipo') }},
+
+Me llamo Luis, soy desarrollador web en Amiens. Acabo de revisar la presencia digital de **{{ lead.business_name }}** y vi que aún no tienen sitio web propio.
+
+Hice un diseño rápido de cómo se vería su plataforma con:
+- Reserva de citas online
+- Galería de trabajos anteriores
+- Cotización instantánea
+
+¿Tienen 5 min esta semana para que les muestre el preview?
+
+Saludos,
+Luis E. Betancourt</textarea>
+
+        <label style="margin-top:.75rem">Variables disponibles</label>
+        <div style="background:#1f2937;padding:.5rem 1rem;border-radius:.25rem;font-size:.85rem;color:#9ca3af">
+          <code>lead.business_name</code>, <code>lead.contact_name</code>, <code>lead.email</code>, <code>lead.phone</code>, <code>lead.score</code>, <code>lead.website</code>
+        </div>
+      </div>
+    </article>
+
+    <article class="day-card">
+      <header>
+        <h3>Día 3 — Bump</h3>
+        <div style="display:flex;gap:.5rem">
+          <button class="secondary outline" style="font-size:.75rem;padding:.25rem .5rem">Duplicar</button>
+          <button class="secondary outline" style="font-size:.75rem;padding:.25rem .5rem">Eliminar</button>
+        </div>
+      </header>
+      <div class="body">
+        <label for="s2">Asunto</label>
+        <input type="text" id="s2" value="A propósito de tu web...">
+
+        <label for="b2" style="margin-top:.75rem">Cuerpo del email</label>
+        <textarea id="b2" rows="6">Hola {{ lead.contact_name | default('equipo') }},
+
+Quería asegurarme de que recibieron mi email del lunes.
+
+Adjunto el preview actualizado: [preview link]
+
+¿Hay algo que les gustaría ajustar antes de publicar?
+
+Luis</textarea>
+      </div>
+    </article>
+
+    <article class="day-card">
+      <header>
+        <h3>Día 7 — Social Proof</h3>
+        <div style="display:flex;gap:.5rem">
+          <button class="secondary outline" style="font-size:.75rem;padding:.25rem .5rem">Duplicar</button>
+          <button class="secondary outline" style="font-size:.75rem;padding:.25rem .5rem">Eliminar</button>
+        </div>
+      </header>
+      <div class="body">
+        <label for="s3">Asunto</label>
+        <input type="text" id="s3" value="Un cliente similar subió sus citas un 30%">
+
+        <label for="b3" style="margin-top:.75rem">Cuerpo del email</label>
+        <textarea id="b3" rows="6">Hola {{ lead.contact_name | default('equipo') }},
+
+Un plomero en Tampa con perfil similar al suyo lanzó su web con reservas online hace 6 semanas.
+
+Resultado: +31% en citas programadas, -40% en llamadas perdidas.
+
+¿Les gustaría ver el case study? Lo tengo listo para compartir.
+
+Luis</textarea>
+      </div>
+    </article>
+
+    <div style="display:flex;gap:.5rem;margin:1.5rem 0">
+      <button class="secondary outline" onclick="alert('Mockup: añadir día adicional')">+ Añadir día</button>
+      <button class="secondary outline" onclick="alert('Mockup: añadir día desde template')">+ Añadir desde template</button>
+    </div>
+
+    <h2 style="margin-top:2rem">Programación</h2>
+    <div class="grid">
+      <div>
+        <label for="start">Inicio de la secuencia</label>
+        <input type="date" id="start" value="2026-05-05">
+      </div>
+      <div>
+        <label for="tz">Zona horaria</label>
+        <select id="tz">
+          <option>Europe/Paris</option>
+          <option>America/New_York</option>
+          <option>America/Los_Angeles</option>
+        </select>
+      </div>
+      <div>
+        <label for="hour">Hora de envío (local)</label>
+        <input type="time" id="hour" value="09:00">
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:2rem">
+      <a href="index.html" role="button" class="secondary outline">Descartar cambios</a>
+      <div style="display:flex;gap:.5rem">
+        <button class="secondary" onclick="alert('Mockup: guardar como borrador')">Guardar borrador</button>
+        <button style="background:var(--primary);border-color:var(--primary);color:#111" onclick="alert('Mockup: guardar y programar')">Guardar y Programar</button>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="unsavedModal" open style="background:rgba(0,0,0,.7);border:none;position:fixed;inset:0;z-index:999;justify-content:center;align-items:center;display:none">
+    <article style="max-width:400px">
+      <h3>Salir sin guardar?</h3>
+      <p>Tienes cambios sin guardar en la secuencia de <strong>Plomería Express</strong>. Si sales ahora, perderás las modificaciones.</p>
+      <footer style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button class="secondary" onclick="document.getElementById('unsavedModal').style.display='none'">Quedarme aquí</button>
+        <button class="contrast" onclick="window.location='index.html'">Salir y descartar</button>
+      </footer>
+    </article>
+  </dialog>
+
+  <script>
+    let dirty = true;
+    window.addEventListener('beforeunload', function(e) {
+      if (dirty) { e.preventDefault(); e.returnValue = ''; }
+    });
+  </script>
+
+  <footer class="container" style="text-align:center;padding:2rem 0;color:var(--muted-color);font-size:.8rem">
+    miCompaWeb v1.2 — Outreach Module (Mockup)
+  </footer>
+</body>
+</html>

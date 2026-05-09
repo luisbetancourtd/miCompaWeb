@@ -18,7 +18,7 @@ from micompaweb.application.ports.exporter import (
 class JSONExporter:
     """Exporta leads a JSON con todos los datos."""
 
-    async def export(
+    def export(
         self,
         leads: List[Lead],
         project: Project,

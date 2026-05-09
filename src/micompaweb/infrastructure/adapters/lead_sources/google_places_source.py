@@ -178,8 +178,8 @@ class GooglePlacesSource:
         max_results: int,
         language: str,
     ) -> List[Dict[str, Any]]:
-        """Busca lugares cercanos usando Places API v1."""
-        url = f"{self.PLACES_API_URL}/places:searchNearby"
+        """Busca lugares usando Places API v1 searchText (más flexible que searchNearby)."""
+        url = f"{self.PLACES_API_URL}/places:searchText"
 
         headers = {
             "Content-Type": "application/json",
@@ -193,13 +193,13 @@ class GooglePlacesSource:
         }
 
         body = {
+            "textQuery": keyword,
             "locationRestriction": {
                 "circle": {
                     "center": {"latitude": coords[0], "longitude": coords[1]},
                     "radius": float(min(radius, 50000)),  # Máximo 50km
                 }
             },
-            "includedTypes": [self._map_keyword_to_type(keyword)],
             "languageCode": language,
             "maxResultCount": min(max_results, 20),  # API v1 max is 20 per call
         }
@@ -213,37 +213,6 @@ class GooglePlacesSource:
 
         # Convertir formato v1 a formato legacy compatible
         return [self._convert_place_v1_to_legacy(p) for p in places]
-
-    def _map_keyword_to_type(self, keyword: str) -> str:
-        """Mapea keywords a tipos de Places API v1."""
-        # Tipos soportados: https://developers.google.com/maps/documentation/places/web-service/place-types
-        # Nota: "establishment" no es válido en la nueva API v1
-        type_mapping = {
-            "plomeros": "plumber",
-            "plumbers": "plumber",
-            "plumber": "plumber",
-            "dentistas": "dentist",
-            "dentists": "dentist",
-            "dentist": "dentist",
-            "abogados": "lawyer",
-            "lawyers": "lawyer",
-            "lawyer": "lawyer",
-            "restaurantes": "restaurant",
-            "restaurants": "restaurant",
-            "restaurant": "restaurant",
-            "doctores": "doctor",
-            "doctors": "doctor",
-            "doctor": "doctor",
-            "electricistas": "electrician",
-            "electricians": "electrician",
-            "electrician": "electrician",
-            "carpinteros": "carpenter",
-            "carpenters": "carpenter",
-            "carpenter": "carpenter",
-        }
-        mapped = type_mapping.get(keyword.lower(), keyword.lower())
-        # Si no hay mapeo válido, usar "business" como fallback seguro
-        return mapped if mapped in type_mapping.values() else "business"
 
     def _convert_place_v1_to_legacy(self, place: Dict[str, Any]) -> Dict[str, Any]:
         """Convierte formato Places API v1 a formato legacy."""

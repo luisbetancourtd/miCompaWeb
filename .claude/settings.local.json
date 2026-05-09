@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl bash *)",
+      "Bash(python3 -m pytest --version)",
+      "Bash(wsl *)",
+      "PowerShell(wsl -d Ubuntu-24.04 -e bash -c \"cd /home/mr-k/projects/micompaweb && .venv/bin/pytest tests/ -q --tb=short --cov=src/micompaweb --cov-report=term-missing --cov-fail-under=80\")",
+      "PowerShell(wsl -d Ubuntu-24.04 -e bash -c \"cd /home/mr-k/projects/micompaweb && .venv/bin/python -m micompaweb doctor\")"
+    ]
+  }
+}
