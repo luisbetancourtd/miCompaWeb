@@ -80,7 +80,8 @@ class LLMChain:
 
             except Exception as e:
                 last_error = e
-                # Continuar con el siguiente proveedor
+                provider_name = getattr(provider, 'provider_name', type(provider).__name__)
+                print(f"[LLM] {provider_name} failed: {e}")
                 continue
 
         # Si ninguno funcionó, usar heurístico
