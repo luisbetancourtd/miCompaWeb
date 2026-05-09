@@ -44,3 +44,10 @@ logs/
 
 # Misc
 =0.4.0
+
+# Documentos internos de desarrollo (no para usuarios)
+CONTEXTO.md
+miCompaWeb-RECARGADO.md
+migrate-to-wsl.sh
+migrate-to-wsl-v2.sh
+docs/

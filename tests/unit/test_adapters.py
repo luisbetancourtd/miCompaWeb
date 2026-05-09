@@ -177,3 +177,117 @@ class TestHeuristicClient:
     def test_estimate_cost_is_zero(self, client):
         """Heuristic should be free."""
         assert client.estimate_cost(1000, 500) == 0.0
+
+
+class TestCachedAuditor:
+    """Tests for CachedAuditor wrapper."""
+
+    @pytest.fixture
+    def mock_cache(self):
+        from tests.conftest import MockCache
+        return MockCache()
+
+    @pytest.fixture
+    def mock_audit_result(self):
+        from micompaweb.application.ports.web_auditor import (
+            TechnicalAudit, SSLResult, TrackingResult, TechStackResult, ContactResult
+        )
+        return TechnicalAudit(
+            ssl=SSLResult(is_valid=True),
+            tracking=TrackingResult(has_meta_pixel=True, has_gtm=False, has_analytics=False),
+            tech_stack=TechStackResult(detected_platforms=["WordPress"], cms="WordPress"),
+            contacts=ContactResult(emails=["info@test.com"], phones=[], social_links={}),
+            mobile_friendly=True,
+            load_time_ms=250,
+            copyright_year=2021,
+            page_title="Test Site",
+        )
+
+    @pytest.mark.asyncio
+    async def test_calls_underlying_auditor_on_cache_miss(self, mock_cache, mock_audit_result):
+        from unittest.mock import AsyncMock
+        from micompaweb.infrastructure.adapters.audit.cached_auditor import CachedAuditor
+
+        mock_auditor = AsyncMock()
+        mock_auditor.audit = AsyncMock(return_value=mock_audit_result)
+        cached = CachedAuditor(mock_auditor, mock_cache)
+
+        result = await cached.audit("https://example.com")
+
+        mock_auditor.audit.assert_called_once_with("https://example.com")
+        assert result.page_title == "Test Site"
+
+    @pytest.mark.asyncio
+    async def test_returns_cached_result_on_hit(self, mock_cache, mock_audit_result):
+        from unittest.mock import AsyncMock
+        from micompaweb.infrastructure.adapters.audit.cached_auditor import (
+            CachedAuditor, _audit_to_dict
+        )
+
+        url = "https://example.com"
+        import hashlib
+        key = f"audit_{hashlib.md5(url.encode()).hexdigest()}"
+        await mock_cache.set(key, _audit_to_dict(mock_audit_result))
+
+        mock_auditor = AsyncMock()
+        cached = CachedAuditor(mock_auditor, mock_cache)
+
+        result = await cached.audit(url)
+
+        mock_auditor.audit.assert_not_called()
+        assert result.page_title == "Test Site"
+        assert result.tracking.has_meta_pixel is True
+
+    @pytest.mark.asyncio
+    async def test_saves_to_cache_after_audit(self, mock_cache, mock_audit_result):
+        from unittest.mock import AsyncMock
+        from micompaweb.infrastructure.adapters.audit.cached_auditor import CachedAuditor
+
+        mock_auditor = AsyncMock()
+        mock_auditor.audit = AsyncMock(return_value=mock_audit_result)
+        cached = CachedAuditor(mock_auditor, mock_cache)
+
+        await cached.audit("https://example.com")
+
+        assert len(mock_cache.set_calls) == 1
+
+    def test_auditor_name_prefixed(self, mock_cache):
+        from unittest.mock import MagicMock
+        from micompaweb.infrastructure.adapters.audit.cached_auditor import CachedAuditor
+
+        inner = MagicMock()
+        inner.auditor_name = "simple_httpx_bs4"
+        cached = CachedAuditor(inner, mock_cache)
+
+        assert cached.auditor_name == "cached_simple_httpx_bs4"
+
+    def test_requires_browser_delegates(self, mock_cache):
+        from unittest.mock import MagicMock
+        from micompaweb.infrastructure.adapters.audit.cached_auditor import CachedAuditor
+
+        inner = MagicMock()
+        inner.requires_browser = False
+        cached = CachedAuditor(inner, mock_cache)
+
+        assert cached.requires_browser is False
+
+    @pytest.mark.asyncio
+    async def test_roundtrip_preserves_ssl_expiry(self, mock_cache):
+        from datetime import datetime
+        from unittest.mock import AsyncMock
+        from micompaweb.application.ports.web_auditor import (
+            TechnicalAudit, SSLResult
+        )
+        from micompaweb.infrastructure.adapters.audit.cached_auditor import CachedAuditor
+
+        expiry = datetime(2026, 12, 31, 0, 0, 0)
+        audit = TechnicalAudit(ssl=SSLResult(is_valid=True, expiry_date=expiry))
+
+        mock_auditor = AsyncMock()
+        mock_auditor.audit = AsyncMock(return_value=audit)
+        cached = CachedAuditor(mock_auditor, mock_cache)
+
+        await cached.audit("https://example.com")
+        result = await cached.audit("https://example.com")
+
+        assert result.ssl.expiry_date == expiry

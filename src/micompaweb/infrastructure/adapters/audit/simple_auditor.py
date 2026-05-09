@@ -2,6 +2,7 @@
 
 import re
 import ssl
+import time
 import socket
 from typing import Optional, List, Dict
 from urllib.parse import urljoin, urlparse
@@ -63,17 +64,18 @@ class SimpleAuditor:
         # Ejecutar todas las auditorías
         ssl_result = await self.check_ssl(url)
 
+        fetch_start = time.monotonic()
         try:
             html = await self._fetch_html(url)
             soup = BeautifulSoup(html, "lxml")
-        except Exception as e:
-            # Si no podemos obtener HTML, retornar solo SSL
+        except Exception:
             return TechnicalAudit(
                 ssl=ssl_result,
                 tracking=TrackingResult(False, False, False),
                 tech_stack=TechStackResult([]),
                 contacts=ContactResult([], [], {}),
             )
+        load_time_ms = int((time.monotonic() - fetch_start) * 1000)
 
         tracking = await self.check_tracking(html)
         tech_stack = await self.detect_tech_stack(html, soup)
@@ -85,7 +87,7 @@ class SimpleAuditor:
             tech_stack=tech_stack,
             contacts=contacts,
             mobile_friendly=self._check_mobile_friendly(soup),
-            load_time_ms=None,  # TODO: Implement timing
+            load_time_ms=load_time_ms,
             copyright_year=self._extract_copyright_year(soup),
             page_title=self._extract_title(soup),
             meta_description=self._extract_meta_description(soup),

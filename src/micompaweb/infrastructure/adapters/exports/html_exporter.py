@@ -1,6 +1,7 @@
 """HTML report exporter - informe premium ejecutivo."""
 
 import json
+import time
 import hashlib
 from pathlib import Path
 from datetime import datetime
@@ -67,7 +68,9 @@ class HTMLReportExporter:
             "language": config.language,
         }
 
+        start = time.monotonic()
         html_content = template.render(**context)
+        duration_ms = int((time.monotonic() - start) * 1000)
 
         # Guardar archivo
         output_path = config.output_dir / f"{config.filename_prefix}_report.html"
@@ -82,7 +85,7 @@ class HTMLReportExporter:
             format="html",
             records_exported=len(leads),
             file_size_bytes=len(html_content.encode()),
-            duration_ms=0,  # TODO: Track timing
+            duration_ms=duration_ms,
             checksum=content_hash,
         )
 
