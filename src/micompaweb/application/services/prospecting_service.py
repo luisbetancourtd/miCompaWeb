@@ -285,7 +285,7 @@ class ProspectingService:
         for i, lead in enumerate(leads):
             scoring_result = self.scoring_service.calculate(lead)
             lead.pepita_score = scoring_result.total_score
-            lead.priority = scoring_result.priority_tier
+            lead.priority = PriorityTier(scoring_result.priority_tier)
             lead.score_breakdown = scoring_result.breakdowns
             self._notify_progress("scoring", i + 1, len(leads))
 

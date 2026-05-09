@@ -10,7 +10,7 @@ class LLMError(Exception):
     pass
 
 
-class LLMProvider(Enum):
+class LLMProvider(str, Enum):
     """Proveedores de LLM soportados."""
     GROQ = "groq"
     OLLAMA = "ollama"
