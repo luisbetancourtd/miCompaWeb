@@ -126,7 +126,7 @@ class Wizard:
                 questionary.Choice("50", value=50),
                 questionary.Choice("100", value=100),
             ],
-            default=questionary.Choice("20", value=20),
+            default=20,
         ).ask()
         return int(result) if result is not None else 20
 
