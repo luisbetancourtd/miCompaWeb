@@ -57,6 +57,25 @@ Best regards,
 {agent_contact}
 """,
         },
+        "fr": {
+            "subject": "{business_name} - Votre site web pourrait vous faire perdre des clients",
+            "body": """Bonjour {owner_name},
+
+Je suis {agent_name}, spécialiste en présence digitale pour {niche}.
+
+J'ai analysé le site de {business_name} et trouvé quelques points qui pourraient vous coûter des clients :
+
+{signals}
+
+{closing}
+
+Avez-vous 15 minutes cette semaine pour en parler ?
+
+Cordialement,
+{agent_name}
+{agent_contact}
+""",
+        },
     }
 
     # Templates per-niche: anchoes específicos para industrias comunes
@@ -100,6 +119,25 @@ Best regards,
 {agent_contact}
 """,
             },
+            "fr": {
+                "subject": "{business_name} - Vos clients vous trouvent-ils en cas d'urgence plomberie ?",
+                "body": """Bonjour {owner_name},
+
+Je suis {agent_name}, spécialiste en marketing digital pour plombiers.
+
+J'ai analysé comment les clients trouvent un plombier en urgence. {business_name} a du potentiel, mais cela vous coûte des appels :
+
+{signals}
+
+{closing}
+
+Souhaitez-vous que je vous montre comment capter ces appels d'urgence que vos concurrents reçoivent ?
+
+Cordialement,
+{agent_name}
+{agent_contact}
+""",
+            },
         },
         "electricistas": {
             "es": {
@@ -117,6 +155,25 @@ Cuando alguien busca 'electricista urgente' en tu zona, ¿sale {business_name} p
 ¿Quieres que te enseñe cómo estar en los primeros resultados cuando alguien necesita un electricista?
 
 Saludos,
+{agent_name}
+{agent_contact}
+""",
+            },
+            "fr": {
+                "subject": "{business_name} - Qui apparaît quand on cherche 'électricien près de chez moi' ?",
+                "body": """Bonjour {owner_name},
+
+Je suis {agent_name}, spécialiste en acquisition digitale pour électriciens.
+
+Quand quelqu'un cherche 'électricien urgent' dans votre zone, {business_name} apparaît-il en premier ? J'ai analysé votre concurrence et trouvé ceci :
+
+{signals}
+
+{closing}
+
+Voulez-vous que je vous montre comment apparaître en premier quand quelqu'un a besoin d'un électricien ?
+
+Cordialement,
 {agent_name}
 {agent_contact}
 """,
@@ -161,6 +218,25 @@ Best regards,
 {agent_contact}
 """,
             },
+            "fr": {
+                "subject": "{business_name} - Nouveaux patients cherchant un dentiste dans votre zone",
+                "body": """Bonjour {owner_name},
+
+Je suis {agent_name}, consultant en marketing dentaire.
+
+Chaque mois, des personnes recherchent un dentiste dans votre zone sans jamais trouver {business_name}. Voici ce que j'ai trouvé :
+
+{signals}
+
+{closing}
+
+Un cabinet dentaire avec une bonne présence digitale obtient jusqu'à 30% de nouveaux patients. Cela vous intéresse ?
+
+Cordialement,
+{agent_name}
+{agent_contact}
+""",
+            },
         },
         "abogados": {
             "es": {
@@ -182,6 +258,25 @@ Saludos,
 {agent_contact}
 """,
             },
+            "fr": {
+                "subject": "{business_name} - Clients potentiels recherchant un conseil juridique en ligne",
+                "body": """Bonjour équipe de {business_name},
+
+Je suis {agent_name}, spécialiste en conseil digital pour cabinets juridiques.
+
+70% des clients potentiels recherchent leur avocat en ligne avant de contacter. {business_name} pourrait perdre des dossiers à cause de cela :
+
+{signals}
+
+{closing}
+
+Une première impression digitale professionnelle augmente le taux de conversion des consultations. Pouvons-nous parler 15 minutes ?
+
+Cordialement,
+{agent_name}
+{agent_contact}
+""",
+            },
         },
         "restaurantes": {
             "es": {
@@ -196,9 +291,28 @@ El 80% de los comensales buscan restaurantes en Google Maps antes de decidir. ¿
 
 {closing}
 
-Restaurantes con buena ficha de Google reciben hasta el doble de reservas. ¿Te interesa saber cómo?
+Restaurantes con buena ficha de Google reciben jusqu'au double de réservations. ¿Te interesa saber cómo?
 
 Saludos,
+{agent_name}
+{agent_contact}
+""",
+            },
+            "fr": {
+                "subject": "{business_name} - Votre restaurant apparaît-il à ceux qui cherchent à manger près de chez eux ?",
+                "body": """Bonjour {owner_name},
+
+Je suis {agent_name}, spécialiste en visibilité digitale pour restaurants.
+
+80% des clients recherchent des restaurants sur Google Maps avant de décider. {business_name} apparaît-il ?
+
+{signals}
+
+{closing}
+
+Les restaurants avec une bonne fiche Google reçoivent jusqu'au double de réservations. Cela vous intéresse ?
+
+Cordialement,
 {agent_name}
 {agent_contact}
 """,
@@ -224,6 +338,25 @@ Saludos,
 {agent_contact}
 """,
             },
+            "fr": {
+                "subject": "{business_name} - Des projets de menuiserie qui ne vous parviennent pas",
+                "body": """Bonjour {owner_name},
+
+Je suis {agent_name}, spécialiste en présence digitale pour menuisiers et ébénistes.
+
+Chaque jour, des personnes recherchent 'menuisier à {city}' ou 'meubles sur mesure' sans jamais voir {business_name}. Voici ce que j'ai trouvé :
+
+{signals}
+
+{closing}
+
+Un atelier avec une bonne image digitale reçoit des projets de plus grande valeur. Cela vous intéresse ?
+
+Cordialement,
+{agent_name}
+{agent_contact}
+""",
+            },
         },
     }
 
@@ -231,14 +364,17 @@ Saludos,
         "formal": {
             "es": "Me encantaría ayudarte a optimizar tu presencia digital para captar más clientes.",
             "en": "I would love to help you optimize your digital presence to attract more customers.",
+            "fr": "Je serais ravi de vous aider à optimiser votre présence digitale pour attirer plus de clients.",
         },
         "casual": {
             "es": "La verdad es que hay un par de cositas fáciles de arreglar que podrían cambiar mucho.",
             "en": "Honestly there are a few easy fixes that could make a big difference.",
+            "fr": "Il y a quelques petits changements simples qui pourraient faire une grande différence.",
         },
         "data": {
             "es": "Según nuestros datos, negocios con web optimizada duplican sus consultas. Voy a explicarte cómo.",
             "en": "According to our data, businesses with optimized websites double their inquiries. Let me show you how.",
+            "fr": "Selon nos données, les entreprises avec un site optimisé doublent leurs demandes. Laissez-moi vous montrer comment.",
         },
     }
 
@@ -331,3 +467,22 @@ Saludos,
             )
             emails.append(email)
         return emails
+
+    @staticmethod
+    def extract_pain_points(lead) -> list[str]:
+        """Extrae pain points desde el score_breakdown de un lead.
+
+        Args:
+            lead: Instancia de Lead con score_breakdown poblado.
+
+        Returns:
+            Lista de strings descriptivos de los pain points detectados.
+        """
+        if not hasattr(lead, "score_breakdown") or not lead.score_breakdown:
+            return ["Sin datos de scoring disponibles"]
+
+        pain_points: list[str] = []
+        for bd in lead.score_breakdown:
+            if bd.points > 0:
+                pain_points.append(f"{bd.criterion}: {bd.evidence}")
+        return pain_points[:5]  # máximo 5 pain points

@@ -73,11 +73,12 @@ def main(
         console.print("  [bold]wizard[/]           — Asistente interactivo")
         console.print("  [bold]setup[/]            — Configurar API keys (primer uso)")
         console.print("  [bold]doctor[/]           — Diagnostico del entorno")
-        console.print("  [bold]projects[/]         — Gestionar proyectos")
+        console.print("  [bold]projects[/]         — Listar proyectos")
         console.print("  [bold]export[/]           — Exportar a HTML/CSV/JSON")
         console.print("  [bold]email[/]            — Generar borrador email")
+        console.print("  [bold]revenue[/]          — Revenue dashboard de un proyecto")
         console.print("  [bold]configure-niche[/]  — Gestionar nichos")
-        console.print("\n[dim]Ejecuta [cyan]micompaweb COMMAND --help[/] para más info.[/]")
+        console.print("\n[dim]Ejecuta [cyan]micompaweb COMMAND --help[/] para mas info.[/]")
         raise typer.Exit()
 
 
@@ -919,6 +920,56 @@ def email(
 
 
 # ──────────────────────────────────────────────────────────────
+# MICOMPAWEB REVENUE (standalone)
+# ──────────────────────────────────────────────────────────────
+
+@app.command()
+def revenue(
+    slug: str = typer.Argument(..., help="Slug del proyecto"),
+    project_dir: Path = typer.Option(Path("./projects"), "--projects-dir", help="Directorio de proyectos"),
+) -> None:
+    """📈 Revenue dashboard: muestra proyeccion de perdida de ingresos por nicho."""
+    WelcomeBanner().show()
+    console.print()
+
+    state = _load_project_state(slug, project_dir)
+    if state is None:
+        console.print(f"[red]❌ Proyecto no encontrado: {slug}[/]")
+        raise typer.Exit(1)
+
+    raw_leads = _load_project_leads(slug, project_dir)
+    if not raw_leads:
+        console.print(f"[yellow]⚠️ Proyecto encontrado pero sin leads: {slug}[/]")
+        raise typer.Exit(1)
+
+    leads: List[Lead] = []
+    for rl in raw_leads:
+        try:
+            leads.append(Lead(**rl))
+        except Exception:
+            pass
+
+    if not leads:
+        console.print("[red]❌ No se pudieron reconstruir leads.[/]")
+        raise typer.Exit(1)
+
+    from micompaweb.presentation.tui import ClosingMenu
+    config = ProjectConfig(
+        niche=state.get("niche", "desconocido"),
+        location=state.get("location", ""),
+        depth="estandar",
+    )
+    project = Project(
+        slug=slug,
+        config=config,
+        project_path=str(project_dir / slug),
+        status=ProjectStatus.COMPLETED,
+    )
+    menu = ClosingMenu(project=project, leads=leads, project_dir=project_dir / slug)
+    menu.revenue_dashboard()
+
+
+# ──────────────────────────────────────────────────────────────
 # MICOMPAWEB CONFIGURE-NICHE
 # ──────────────────────────────────────────────────────────────
 
@@ -1014,6 +1065,22 @@ def setup() -> None:
     """🔑 Configurar API keys (primer uso)."""
     from micompaweb.application.ui.setup_wizard import SetupWizard
     SetupWizard().run()
+
+
+# ──────────────────────────────────────────────────────────────
+# WEB GUI — Levanta FastAPI local
+# ──────────────────────────────────────────────────────────────
+
+@app.command()
+def web(
+    host: str = typer.Option("127.0.0.1", "--host", help="Host para escuchar"),
+    port: int = typer.Option(8000, "--port", "-p", help="Puerto"),
+    reload: bool = typer.Option(False, "--reload", help="Auto-reload en desarrollo"),
+) -> None:
+    """🌐 Abrir GUI web local (FastAPI + HTMX)."""
+    import uvicorn
+    console.print(f"[bold green]🚀 GUI web en http://{host}:{port}[/]")
+    uvicorn.run("micompaweb.app.api:app", host=host, port=port, reload=reload)
 
 
 # ──────────────────────────────────────────────────────────────

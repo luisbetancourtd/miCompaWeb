@@ -22,20 +22,35 @@ class Wizard:
         self.niches = NicheRepository.list_available()
 
     def run(self) -> ProjectConfig:
-        """Ejecuta el wizard completo."""
-        niche = self._ask_niche()
-        location = self._ask_location(niche)
+        """Ejecuta el wizard completo con validación."""
+        from micompaweb.application.ui.input_agent import InputAgent
+        agent = InputAgent()
+
+        niche_raw = self._ask_niche()
+        niche = agent.sanitize_niche(niche_raw)
+        niche = agent.guardian.normalize_niche(niche, self.niches)
+
+        location = self._ask_location_with_agent(agent, niche)
         language = self._ask_language()
         depth = self._ask_depth()
         max_leads = self._ask_max_leads()
 
-        return ProjectConfig(
+        config = ProjectConfig(
             niche=niche,
             location=location,
             target_language=language,
             depth=depth,
             max_leads=max_leads,
         )
+
+        config = agent.sanitize(config)
+        is_valid, errors = agent.validate_config(config)
+        if not is_valid:
+            for e in errors:
+                questionary.print(f"❌ {e}", style="bold fg:red")
+            raise ValueError("Configuracion invalida")
+
+        return config
 
     def _ask_niche(self) -> str:
         """Pregunta nicho con búsqueda fuzzy."""
@@ -49,14 +64,23 @@ class Wizard:
             ]),
         ).ask()
 
-    def _ask_location(self, niche: str) -> str:
-        """Pregunta ciudad/área."""
+    def _ask_location_with_agent(self, agent, niche: str) -> str:
+        """Pregunta ciudad con normalización y confirmación de autocorrección."""
         hint = self.NICHE_HINTS.get(niche, "Ej: Ciudad de México")
-        return questionary.text(
-            f"Ciudad o área para buscar {niche}:",
-            instruction=hint,
-            validate=lambda t: len(t.strip()) >= 2 or "Mínimo 2 caracteres",
-        ).ask()
+        while True:
+            raw = questionary.text(
+                f"Ciudad o área para buscar {niche}:",
+                instruction=hint,
+                validate=lambda t: len(t.strip()) >= 2 or "Mínimo 2 caracteres",
+            ).ask()
+            city, warnings = agent.normalize_city(raw)
+            if warnings:
+                for w in warnings:
+                    questionary.print(f"  {w}", style="italic fg:yellow")
+                if questionary.confirm(f"Usar '{city}'?", default=True).ask():
+                    return city
+            else:
+                return city
 
     def _ask_language(self) -> str:
         """Pregunta idioma de comunicación."""

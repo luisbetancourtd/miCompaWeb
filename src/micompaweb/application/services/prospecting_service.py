@@ -47,6 +47,7 @@ class ProspectingService:
         competitor_service=None,
         sentiment_adapter=None,
         input_guardian: Optional[InputGuardian] = None,
+        cost_guardian=None,
     ):
         self.lead_source = lead_source
         self.web_auditor = web_auditor
@@ -59,10 +60,11 @@ class ProspectingService:
         self.scoring_service = ScoringService()
         self.revenue_service = RevenueService()
 
-        # Servicios opcionales (Phase 3 wiring)
+        # Servicios opcionales (Phase 3+ wiring)
         self.competitor_service = competitor_service
         self.sentiment_adapter = sentiment_adapter
         self.input_guardian = input_guardian
+        self.cost_guardian = cost_guardian
 
         # Callbacks de progreso
         self._progress_callbacks: List[Callable[[str, int, int], None]] = []
@@ -127,9 +129,8 @@ class ProspectingService:
 
             project.stats.total_scanned = len(leads)
 
-            # === STAGE 1.5: Chain Filter + Competitors ===
+            # === STAGE 1.5: Chain Filter ===
             leads = self._filter_chains(leads)
-            self._analyze_competitors(leads)
 
             # === STAGE 2: Web Audit ===
             leads_with_websites = [l for l in leads if l.website_url]
@@ -137,6 +138,9 @@ class ProspectingService:
 
             # === STAGE 3: Vigency Check ===
             await self._check_vigency(leads_with_websites, max_concurrent_audits)
+
+            # === STAGE 3.5: Competitor Analysis ===
+            self._analyze_competitors(leads)
 
             # === STAGE 4: Scoring ===
             self._score_leads(leads)
@@ -163,8 +167,21 @@ class ProspectingService:
             raise ProspectingError(f"Pipeline failed: {e}") from e
 
     async def _discover_leads(self, project: Project) -> List[Lead]:
-        """Descubre leads desde la fuente configurada."""
+        """Descubre leads desde la fuente configurada con control de costos."""
         self._notify_progress("discovery", 0, 1)
+
+        # Preview de costo antes de ejecutar
+        if self.cost_guardian:
+            preview = self.cost_guardian.preview_cost(
+                self.lead_source.source_name, project.config.max_leads
+            )
+            if not self.cost_guardian.can_proceed(
+                self.lead_source.source_name, project.config.max_leads
+            ):
+                raise ProspectingError(
+                    f"Presupuesto diario insuficiente: necesita ~${preview:.2f}, "
+                    f"restante ${self.cost_guardian.remaining():.2f}"
+                )
 
         depth_radius = {
             "rapida": 5000,
@@ -361,10 +378,10 @@ class ProspectingService:
         return filtered
 
     def _analyze_competitors(self, leads: List[Lead]) -> None:
-        """STAGE 1.5b: Analiza competidores y guarda en leads."""
+        """STAGE 3.5: Analiza competidores usando datos de auditoría reales."""
         if self.competitor_service is None or not leads:
             return
-        # Construir lista de dicts crudos desde los leads
+        # Construir lista de dicts crudos desde los leads (ahora con audit data)
         raw_competitors = []
         for lead in leads:
             raw_competitors.append({
@@ -380,6 +397,11 @@ class ProspectingService:
                 "review_count": lead.review_count,
                 "rating": lead.rating,
                 "age_months": getattr(lead, "estimated_business_age_years", 0) or 0,
+                # Enriquecimiento digital (disponible post-audit)
+                "ssl_valid": lead.audit.ssl_valid,
+                "mobile_friendly": lead.audit.mobile_friendly,
+                "cms": lead.audit.cms,
+                "technology_stack": lead.audit.technology_stack,
             })
         matrix = self.competitor_service.analyze(raw_competitors)
         for lead in leads:
@@ -398,26 +420,25 @@ class ProspectingService:
         self._notify_progress("competitors", 1, 1)
 
     def _analyze_sentiment(self, leads: List[Lead]) -> None:
-        """STAGE 4.5: Analiza sentimiento de reviews."""
+        """STAGE 4.5: Analiza sentimiento de reviews reales o simuladas."""
         if self.sentiment_adapter is None:
             return
         for i, lead in enumerate(leads):
             if not lead.review_count:
                 continue
-            # Simular reviews desde metadatos del lead
-            reviews = self._generate_mock_reviews(lead)
+            # Usar reviews reales si existen, fallback a mocks
+            reviews = lead.reviews_sample if lead.reviews_sample else self._generate_mock_reviews(lead)
             score = self.sentiment_adapter.analyze(reviews)
-            # Mapear a ReviewSentiment modelo
             from micompaweb.domain.models import ReviewSentiment
             lead.review_sentiment = ReviewSentiment(
-                common_themes=[self.sentiment_adapter.category(score.compound)],
+                common_themes=score.themes if score.themes else [self.sentiment_adapter.category(score.compound)],
                 average_sentiment=score.compound,
             )
             self._notify_progress("sentiment", i + 1, len(leads))
 
     @staticmethod
     def _generate_mock_reviews(lead: Lead) -> list:
-        """Genera reviews simuladas basadas en rating para análisis de sentimiento."""
+        """Genera reviews simuladas basadas en rating para fallback."""
         rating = lead.rating
         if rating >= 4.5:
             return ["excelente servicio", "muy profesional", "recomiendo", "genial atencion"]

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from micompaweb.domain.models import Lead
 from micompaweb.application.ports import LeadSource, Cache, LeadSourceError, NoSourceAvailable
 from micompaweb.application.ports.lead_source import CostEstimate
+from micompaweb.infrastructure.cost_guardian import CostGuardian
 
 
 @dataclass
@@ -32,15 +33,21 @@ class LeadSourceManager:
         leads = await manager.search(niche="plomeros", location="CDMX")
     """
 
-    def __init__(self, max_cost_per_operation: float = 2.00):
+    def __init__(
+        self,
+        max_cost_per_operation: float = 2.00,
+        cost_guardian: Optional[CostGuardian] = None,
+    ):
         """Inicializa manager.
 
         Args:
             max_cost_per_operation: Costo máximo permitido por búsqueda
+            cost_guardian: Guardian de costos diario con persistencia SQLite
         """
         self._sources: List[SourceWithPriority] = []
         self.max_cost_per_operation = max_cost_per_operation
         self._cost_tracker: dict[str, float] = {}
+        self.cost_guardian = cost_guardian
 
     def add_source(
         self,
@@ -108,6 +115,15 @@ class LeadSourceManager:
                 )
                 continue
 
+            # Verificar presupuesto diario si hay CostGuardian
+            if self.cost_guardian and not self.cost_guardian.can_proceed(
+                source.source_name, cost_estimate.requests_count
+            ):
+                errors.append(
+                    f"{source.source_name}: Daily budget exceeded"
+                )
+                continue
+
             try:
                 leads = await source.search(
                     niche=niche,
@@ -120,6 +136,10 @@ class LeadSourceManager:
                 if leads:
                     # Registrar costo usado
                     self._track_cost(source.source_name, cost_estimate.usd_amount)
+                    if self.cost_guardian:
+                        self.cost_guardian.charge(
+                            source.source_name, cost_estimate.requests_count
+                        )
                     return leads
 
             except LeadSourceError as e:

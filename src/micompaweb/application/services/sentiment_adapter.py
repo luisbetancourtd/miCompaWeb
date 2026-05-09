@@ -1,7 +1,15 @@
-"""Sentiment analysis adapter - local VADER-based."""
+"""Sentiment analysis adapter - VADER optional, heuristic fallback."""
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from dataclasses import dataclass
+from collections import Counter
+
+# Optional VADER dependency
+try:
+    from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+    _VADER_AVAILABLE = True
+except ImportError:
+    _VADER_AVAILABLE = False
 
 
 @dataclass
@@ -13,12 +21,25 @@ class SentimentScore:
     neutral: float        # 0.0 a 1.0
     review_count: int = 0
     confidence: str = "medium"  # high, medium, low
+    themes: List[str] = None  # type: ignore
+
+    def __post_init__(self):
+        if self.themes is None:
+            self.themes = []
 
 
 class SentimentAdapter:
-    """Analizador de sentimiento local (VADER opcional, fallback heuristico)."""
+    """Analizador de sentimiento: VADER si disponible, fallback heuristico."""
 
-    # Palabras positivas en español/inglés (versión básica sin NLTK)
+    # Stopwords simples para extracción de themes
+    STOP_WORDS = {
+        "el", "la", "los", "las", "de", "del", "y", "a", "en", "con", "por", "para",
+        "un", "una", "uno", "unos", "ese", "esa", "eso", "esos", "pero", "lo", "le",
+        "que", "se", "al", "lo", "su", "sus", "me", "mi", "te", "tu", "nos", "les",
+        "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of",
+        "with", "by", "from", "is", "was", "are", "were", "be", "been", "being",
+    }
+
     POSITIVE_WORDS = {
         "excelente", "excelentes", "fantastico", "fantástico", "increíble", "increible",
         "genial", "bueno", "buena", "buenisimo", "buenísimo",
@@ -38,15 +59,48 @@ class SentimentAdapter:
         "unprofessional", "rude", "scam", "fraud", "disappointing",
     }
 
-    def _normalize(self, text: str) -> str:
-        """Quita tildes para matching más robusto."""
-        return text.lower().replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("ñ", "n")
+    def __init__(self):
+        self._vader = SentimentIntensityAnalyzer() if _VADER_AVAILABLE else None
 
     def analyze(self, reviews: List[str]) -> SentimentScore:
-        """Analiza lista de reviews y retorna score compuesto."""
+        """Analiza lista de reviews: VADER si disponible, heuristico fallback."""
         if not reviews:
-            return SentimentScore(compound=0.0, positive=0.0, negative=0.0, neutral=1.0, review_count=0)
+            return SentimentScore(
+                compound=0.0, positive=0.0, negative=0.0, neutral=1.0, review_count=0,
+                themes=[],
+            )
 
+        if self._vader:
+            return self._analyze_vader(reviews)
+        return self._analyze_heuristic(reviews)
+
+    def _analyze_vader(self, reviews: List[str]) -> SentimentScore:
+        """Analisis con VADER."""
+        compounds = []
+        for r in reviews:
+            scores = self._vader.polarity_scores(r)
+            compounds.append(scores["compound"])
+
+        avg_compound = sum(compounds) / len(compounds)
+        pos = sum(1 for c in compounds if c >= 0.05) / len(compounds)
+        neg = sum(1 for c in compounds if c <= -0.05) / len(compounds)
+        neu = 1.0 - pos - neg
+
+        confidence = "low" if len(reviews) < 5 else ("high" if len(reviews) >= 15 else "medium")
+        themes = self._extract_themes(reviews)
+
+        return SentimentScore(
+            compound=round(avg_compound, 3),
+            positive=round(pos, 3),
+            negative=round(neg, 3),
+            neutral=round(neu, 3),
+            review_count=len(reviews),
+            confidence=confidence,
+            themes=themes,
+        )
+
+    def _analyze_heuristic(self, reviews: List[str]) -> SentimentScore:
+        """Analisis heuristico sin dependencias."""
         pos_reviews = 0
         neg_reviews = 0
         neutral_reviews = 0
@@ -72,14 +126,37 @@ class SentimentAdapter:
         compound = max(-1.0, min(1.0, compound))
 
         confidence = "low" if total < 5 else ("high" if total >= 15 else "medium")
+        themes = self._extract_themes(reviews)
 
         return SentimentScore(
-            compound=compound,
-            positive=pos_ratio,
-            negative=neg_ratio,
-            neutral=neutral_ratio,
+            compound=round(compound, 3),
+            positive=round(pos_ratio, 3),
+            negative=round(neg_ratio, 3),
+            neutral=round(neutral_ratio, 3),
             review_count=total,
             confidence=confidence,
+            themes=themes,
+        )
+
+    def _extract_themes(self, reviews: List[str]) -> List[str]:
+        """Extrae palabras clave frecuentes (top 5) de las reviews."""
+        words: List[str] = []
+        for r in reviews:
+            for w in self._normalize(r).split():
+                if len(w) > 3 and w not in self.STOP_WORDS:
+                    words.append(w)
+        if not words:
+            return []
+        counter = Counter(words)
+        return [word for word, _ in counter.most_common(5)]
+
+    @staticmethod
+    def _normalize(text: str) -> str:
+        """Quita tildes para matching robusto."""
+        return (
+            text.lower()
+            .replace("á", "a").replace("é", "e").replace("í", "i")
+            .replace("ó", "o").replace("ú", "u").replace("ñ", "n")
         )
 
     def has_negative_signal(self, reviews: List[str], threshold: float = 0.4) -> bool:

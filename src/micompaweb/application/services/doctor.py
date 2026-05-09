@@ -111,9 +111,10 @@ class MiCompaWebDoctor:
 
     def _check_services(self) -> None:
         try:
+            from micompaweb.infrastructure.cost_guardian import CostGuardian
             from micompaweb.application.services import (
                 ScoringService, CompetitorService, MarketHealthAnalyzer,
-                CostGuardian, EmailGenerator, SentimentAdapter,
+                EmailGenerator, SentimentAdapter,
             )
             self._checks.append(HealthCheck(
                 component="Services",

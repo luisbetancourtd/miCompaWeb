@@ -77,6 +77,41 @@ class TestCompetitorService:
         assert matrix.market_maturity == "madura"
         assert matrix.opportunity_score < 50
 
+    @pytest.mark.asyncio
+    async def test_fetch_competitor_details(self):
+        class MockAuditor:
+            async def audit(self, url):
+                from micompaweb.domain.models import TechnicalAudit
+                return TechnicalAudit(
+                    ssl_valid=True,
+                    has_meta_pixel=True,
+                    mobile_friendly=True,
+                    cms="WordPress",
+                )
+
+        svc = CompetitorService(web_auditor=MockAuditor())
+        profiles = await svc.fetch_competitor_details(["https://example.com"])
+        assert len(profiles) == 1
+        assert profiles[0].has_website is True
+        assert profiles[0].has_tracking is True
+        assert profiles[0].digital_maturity_score == 100.0
+
+    @pytest.mark.asyncio
+    async def test_fetch_competitor_details_no_auditor(self):
+        svc = CompetitorService(web_auditor=None)
+        profiles = await svc.fetch_competitor_details(["https://example.com"])
+        assert profiles == []
+
+    @pytest.mark.asyncio
+    async def test_fetch_competitor_details_exception(self):
+        class BadAuditor:
+            async def audit(self, url):
+                raise RuntimeError("fail")
+
+        svc = CompetitorService(web_auditor=BadAuditor())
+        profiles = await svc.fetch_competitor_details(["https://example.com"])
+        assert profiles == []
+
 
 class TestPlacesDetailsExtractor:
     """Test PlacesDetailsExtractor."""

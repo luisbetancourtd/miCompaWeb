@@ -95,7 +95,7 @@ class GooglePlacesSource:
             "X-Goog-FieldMask": "id,displayName,formattedAddress,location,types,"
                                "rating,userRatingCount,websiteUri,nationalPhoneNumber,"
                                "plusCode,photos,regularOpeningHours,editorialSummary,"
-                               "businessStatus",
+                               "businessStatus,reviews",
         }
 
         params = {"languageCode": language}
@@ -270,6 +270,7 @@ class GooglePlacesSource:
             "opening_hours": place.get("regularOpeningHours"),
             "editorial_summary": place.get("editorialSummary"),
             "business_status": place.get("businessStatus"),
+            "reviews": place.get("reviews", []),
         }
 
     async def _normalize_place(
@@ -326,6 +327,16 @@ class GooglePlacesSource:
             is_claimed=True,  # Asumimos que si tiene datos está verificado
         )
 
+        # Extraer textos de reviews (hasta 5 de Places API v1)
+        reviews_raw = result.get("reviews", [])
+        reviews_text: List[str] = []
+        for r in reviews_raw[:5]:
+            text = r.get("text", {})
+            if isinstance(text, dict):
+                reviews_text.append(text.get("text", ""))
+            elif isinstance(text, str):
+                reviews_text.append(text)
+
         return Lead(
             external_id=result.get("place_id", ""),
             source=self.source_name,
@@ -342,6 +353,7 @@ class GooglePlacesSource:
             plus_code=result.get("plus_code", {}).get("global_code"),
             rating=result.get("rating", 0),
             review_count=result.get("user_ratings_total", 0),
+            reviews_sample=reviews_text,
             maps_url=f"https://www.google.com/maps/place/?q=place_id:{result.get('place_id')}",
             gbp_health=gbp_health,
         )

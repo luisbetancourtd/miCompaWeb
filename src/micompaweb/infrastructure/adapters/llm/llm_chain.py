@@ -113,6 +113,26 @@ class LLMChain:
             lead_name, niche, pain_points
         )
 
+    def test_connectivity(self) -> bool:
+        """Testea conectividad de al menos un proveedor activo (sync-safe)."""
+        import asyncio
+        for provider in self.providers:
+            try:
+                if hasattr(provider, "is_available"):
+                    if asyncio.iscoroutinefunction(provider.is_available):
+                        loop = asyncio.new_event_loop()
+                        try:
+                            available = loop.run_until_complete(provider.is_available())
+                        finally:
+                            loop.close()
+                    else:
+                        available = provider.is_available()
+                    if available:
+                        return True
+            except Exception:
+                continue
+        return False
+
     def get_available_providers(self) -> List[str]:
         """Lista proveedores disponibles."""
         return [p.provider_name for p in self.providers]

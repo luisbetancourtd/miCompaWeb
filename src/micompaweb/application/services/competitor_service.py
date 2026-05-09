@@ -1,7 +1,8 @@
 """Competitor analysis service - Market intelligence."""
 
+import asyncio
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -14,6 +15,7 @@ class CompetitorProfile:
     review_count: int = 0
     rating: float = 0.0
     estimated_age_months: int = 0
+    digital_maturity_score: float = 0.0  # 0-100 (SSL + tracking + mobile + CMS)
     signals: List[str] = field(default_factory=list)
 
 
@@ -33,6 +35,9 @@ class CompetitorMatrix:
 
 class CompetitorService:
     """Servicio de análisis de competidores locales."""
+
+    def __init__(self, web_auditor=None):
+        self.web_auditor = web_auditor
 
     def analyze(self, raw_competitors: List[dict]) -> CompetitorMatrix:
         """Analiza lista de competidores crudos y genera matriz."""
@@ -89,6 +94,8 @@ class CompetitorService:
         if has_gbp:
             signals.append("GBP activo")
 
+        digital_maturity = self._calculate_digital_maturity(data)
+
         return CompetitorProfile(
             name=data.get("name", "Unknown"),
             has_website=has_web,
@@ -97,8 +104,57 @@ class CompetitorService:
             review_count=data.get("review_count", 0),
             rating=data.get("rating", 0.0),
             estimated_age_months=data.get("age_months", 0),
+            digital_maturity_score=round(digital_maturity, 1),
             signals=signals,
         )
+
+    @staticmethod
+    def _calculate_digital_maturity(data: dict) -> float:
+        """Calcula score de madurez digital 0-100 desde datos crudos."""
+        score = 0.0
+        if data.get("ssl_valid", False):
+            score += 25.0
+        if data.get("has_tracking", False):
+            score += 25.0
+        if data.get("mobile_friendly", False):
+            score += 25.0
+        if data.get("cms") or data.get("technology_stack"):
+            score += 25.0
+        return score
+
+    async def fetch_competitor_details(self, competitor_urls: List[str]) -> List[CompetitorProfile]:
+        """Audita URLs de competidores y genera perfiles enriquecidos con datos reales.
+
+        Args:
+            competitor_urls: Lista de URLs de sitios web de competidores.
+
+        Returns:
+            Lista de CompetitorProfile con digital_maturity_score calculado.
+        """
+        if not self.web_auditor or not competitor_urls:
+            return []
+
+        profiles: List[CompetitorProfile] = []
+        for url in competitor_urls:
+            try:
+                audit = await self.web_auditor.audit(url)
+                data = {
+                    "name": url,
+                    "website": bool(url),
+                    "has_tracking": any([
+                        getattr(audit, "has_meta_pixel", False),
+                        getattr(audit, "has_gtm", False),
+                        getattr(audit, "has_analytics", False),
+                    ]),
+                    "ssl_valid": getattr(audit, "ssl_valid", False),
+                    "mobile_friendly": getattr(audit, "mobile_friendly", False),
+                    "cms": getattr(audit, "cms", None),
+                    "technology_stack": getattr(audit, "technology_stack", []),
+                }
+                profiles.append(self._build_profile(data))
+            except Exception:
+                continue
+        return profiles
 
     def _classify_maturity(self, total: int, with_web: int, with_track: int) -> str:
         """Clasifica madurez del mercado."""

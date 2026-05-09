@@ -167,6 +167,7 @@ class Lead(BaseModel):
     # Reviews
     has_recent_reviews: bool = False
     review_velocity: float = 0.0  # reviews/mes
+    reviews_sample: List[str] = Field(default_factory=list)  # textos crudos de reviews
     review_sentiment: Optional[ReviewSentiment] = None
 
     # Redes sociales

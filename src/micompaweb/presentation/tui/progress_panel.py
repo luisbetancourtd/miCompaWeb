@@ -12,8 +12,9 @@ class ProgressPanel:
     """Panel de progreso con estados de pipeline M1."""
 
     STAGES = [
-        "validation", "discovery", "filter_chains", "competitors",
-        "audit", "vigency", "scoring", "sentiment",
+        "validation", "discovery", "filter_chains",
+        "audit", "vigency", "competitors",
+        "scoring", "sentiment",
         "revenue", "export",
     ]
 
@@ -21,9 +22,9 @@ class ProgressPanel:
         "validation":    "✅  Validación",
         "discovery":     "🔍  Descubrimiento",
         "filter_chains": "🛡️  Filtro Cadenas",
-        "competitors":   "⚔️  Competidores",
         "audit":         "🔧  Auditoría Web",
         "vigency":       "🕒  Vigencia",
+        "competitors":   "⚔️  Competidores",
         "scoring":       "📊  Scoring 3D",
         "sentiment":     "🎭  Sentimiento",
         "revenue":       "💰  Revenue",
@@ -57,7 +58,7 @@ class ProgressPanel:
                 lines.append(f"[green]✓ {name}[/green]")
             elif i == self.current_stage_idx:
                 if self.task_id is not None:
-                    lines.append(str(self.progress.get_task(self.task_id)))
+                    lines.append(str(self.progress.tasks[self.task_id]))
                 else:
                     lines.append(f"[bold yellow]⏳ {name}...[/bold yellow]")
             else:
@@ -92,4 +93,5 @@ class ProgressPanel:
         self._refresh()
 
     def _refresh(self):
-        self.live.update(self._render())
+        if hasattr(self, "live") and self.live is not None:
+            self.live.update(self._render())

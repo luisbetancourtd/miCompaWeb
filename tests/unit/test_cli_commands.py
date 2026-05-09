@@ -427,3 +427,43 @@ class TestConfigureNiche:
             ])
             assert result.exit_code == 1
             assert "no encontrado" in result.output.lower()
+
+
+# ──────────────────────────────────────────────────────────────
+# Revenue standalone
+# ──────────────────────────────────────────────────────────────
+
+class TestRevenue:
+    def test_revenue_slug_not_found(self):
+        result = runner.invoke(app, [
+            "revenue", "nonexistent-slug",
+            "--projects-dir", str(Path("/tmp/nonexistent_xyz")),
+        ])
+        assert result.exit_code == 1
+        assert "no encontrado" in result.output.lower()
+
+    def test_revenue_existing_project(self, tmp_path: Path):
+        slug = "plomeros-rev-test"
+        _make_project_dir(tmp_path, slug, niche="plomeros", business_name="Plomeros Inc")
+        result = runner.invoke(app, [
+            "revenue", slug,
+            "--projects-dir", str(tmp_path),
+        ])
+        assert result.exit_code == 0
+        assert "Proyeccion" in result.output or "Revenue" in result.output or "perdida" in result.output.lower()
+
+    def test_revenue_project_no_leads(self, tmp_path: Path):
+        slug = "empty-rev"
+        pdir = tmp_path / slug
+        pdir.mkdir(parents=True)
+        (pdir / "_state").mkdir(exist_ok=True)
+        (pdir / "_state" / "m1_complete.json").write_text(json.dumps({
+            "slug": slug, "niche": "plomeros", "location": "CDMX", "score": 50,
+        }), encoding="utf-8")
+
+        result = runner.invoke(app, [
+            "revenue", slug,
+            "--projects-dir", str(tmp_path),
+        ])
+        assert result.exit_code == 1
+        assert "sin leads" in result.output.lower()

@@ -44,6 +44,10 @@ dependencies = [
     "qdrant-client>=1.8.0",    # Vector DB client
     "fastembed>=0.2.0",        # Local embeddings (no API keys)
     "numpy>=1.26.0",           # Embeddings math
+    # --- Web GUI ---
+    "fastapi>=0.110.0",        # Web framework
+    "uvicorn[standard]>=0.29.0",  # ASGI server
+    "python-multipart>=0.0.9", # Form parsing
 ]
 
 [project.optional-dependencies]
@@ -73,14 +77,14 @@ export = [
     "pandas>=2.0.0",           # DataFrames
 ]
 
-# Grupo 5: Integraciones
-integrations = [
-    "notion-client>=2.0.0",    # Notion
+# Grupo 5: Análisis de sentimiento avanzado (VADER)
+sentiment = [
+    "vaderSentiment>=3.3",     # NLP sentiment analysis
 ]
 
 # Todo en uno (para power users)
 full = [
-    "micompaweb[audit,places,llm-local,llm-cloud,export,integrations]"
+    "micompaweb[audit,places,llm-local,llm-cloud,export,sentiment]"
 ]
 
 # Desarrollo

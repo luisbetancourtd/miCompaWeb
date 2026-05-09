@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>miCompaWeb Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-slate-800 mb-6">miCompaWeb Dashboard</h1>
+
+        {% if projects %}
+        <div class="grid gap-4">
+            {% for p in projects %}
+            <div class="bg-white rounded-lg shadow p-4 border-l-4
+                {% if p.status == 'completed' %}border-green-500{% else %}border-blue-500{% endif %}">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-xl font-semibold text-slate-700">
+                            {{ p.config.niche }} - {{ p.config.location }}
+                        </h2>
+                        <p class="text-gray-500 text-sm mt-1">
+                            Estado: <span class="font-medium">{{ p.status }}</span>
+                            | Leads: <span class="font-medium">{{ p.stats.total_leads }}</span>
+                            | Score: <span class="font-medium">{{ p.market_health_score }}</span>
+                        </p>
+                    </div>
+                    <a href="/leads?project_slug={{ p.slug }}"
+                       class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        Ver leads →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-500 mb-4">No hay proyectos aun.</p>
+            <p class="text-sm text-gray-400">
+                Ejecuta <code class="bg-gray-100 px-2 py-1 rounded">micompaweb m1 --fixture</code>
+                desde la terminal para crear tu primer proyecto.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

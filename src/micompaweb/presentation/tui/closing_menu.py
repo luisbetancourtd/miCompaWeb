@@ -44,10 +44,10 @@ class ClosingMenu:
         """Muestra menu y retorna accion seleccionada."""
         # Header
         total = len(self.leads)
-        ultra = sum(1 for l in self.leads if l.priority.value == "ULTRA HOT")
-        hot = sum(1 for l in self.leads if l.priority.value == "HOT")
-        warm = sum(1 for l in self.leads if l.priority.value == "WARM")
-        cold = sum(1 for l in self.leads if l.priority.value == "COLD")
+        ultra = sum(1 for l in self.leads if getattr(l.priority, "value", l.priority) == "ULTRA HOT")
+        hot = sum(1 for l in self.leads if getattr(l.priority, "value", l.priority) == "HOT")
+        warm = sum(1 for l in self.leads if getattr(l.priority, "value", l.priority) == "WARM")
+        cold = sum(1 for l in self.leads if getattr(l.priority, "value", l.priority) == "COLD")
 
         header = (
             f"[bold green]✅ Analisis completado:[/] [cyan]{self.project.slug}[/]\n\n"
@@ -89,9 +89,9 @@ class ClosingMenu:
         rows = []
         for i, lead in enumerate(sorted_leads, 1):
             signals = []
-            if lead.website_status.value == "none":
+            if getattr(lead.website_status, "value", lead.website_status) == "none":
                 signals.append("Sin web")
-            elif lead.website_status.value == "http_only":
+            elif getattr(lead.website_status, "value", lead.website_status) == "http_only":
                 signals.append("Sin SSL")
             if lead.competitor_count and lead.competitor_count > 5:
                 signals.append(f"{lead.competitor_count} competidores")
@@ -101,7 +101,7 @@ class ClosingMenu:
             rows.append(LeadRow(
                 rank=i,
                 name=lead.business_name,
-                priority_tier=lead.priority.value,
+                priority_tier=getattr(lead.priority, "value", lead.priority),
                 score=lead.pepita_score,
                 signals=signals,
                 phone=lead.phone,
@@ -182,7 +182,7 @@ class ClosingMenu:
         """Genera emails batch para leads HOT+."""
         from micompaweb.application.services.email_generator import EmailGenerator
 
-        hot_leads = [l for l in self.leads if l.priority.value in ("ULTRA HOT", "HOT")]
+        hot_leads = [l for l in self.leads if getattr(l.priority, "value", l.priority) in ("ULTRA HOT", "HOT")]
         if not hot_leads:
             console.print("[yellow]No hay leads HOT o ULTRA HOT para batch.[/]")
             return
@@ -222,7 +222,7 @@ class ClosingMenu:
         table.add_column("Nota", style="dim")
 
         total_leads = len(self.leads)
-        hot_plus = sum(1 for l in self.leads if l.priority.value in ("ULTRA HOT", "HOT"))
+        hot_plus = sum(1 for l in self.leads if getattr(l.priority, "value", l.priority) in ("ULTRA HOT", "HOT"))
         table.add_row("Leads totales", str(total_leads), "")
         table.add_row("Leads HOT+", str(hot_plus), f"{hot_plus/total_leads*100:.0f}% del total")
         table.add_row("Revenue bajo", f"${self.project.total_estimated_revenue_loss_low:,.0f}", "Escenario conservador")
@@ -243,9 +243,9 @@ class ClosingMenu:
     def _signals_for_lead(self, lead: Lead) -> list:
         """Extrae signals acionables de un lead para email."""
         signals = []
-        if lead.website_status.value == "none":
+        if getattr(lead.website_status, "value", lead.website_status) == "none":
             signals.append("Sin sitio web detectado")
-        elif lead.website_status.value == "http_only":
+        elif getattr(lead.website_status, "value", lead.website_status) == "http_only":
             signals.append("Sitio web sin HTTPS")
         if lead.audit and not getattr(lead.audit, "ssl_valid", True):
             signals.append("Certificado SSL invalido")

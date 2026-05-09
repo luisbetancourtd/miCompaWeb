@@ -2,7 +2,7 @@
 
 import random
 from typing import List
-from rich.console import Console
+from rich.console import Console, Group
 from rich.panel import Panel
 from rich.table import Table
 
@@ -50,10 +50,17 @@ class ClosingScreen:
         tips = random.sample(self.TIPS, min(tips_count, len(self.TIPS)))
         tips_text = "\n".join(tips)
 
+        content = Group(
+            "[bold bright_green]✅ Sesión completada[/bold bright_green]",
+            "",
+            metrics,
+            "",
+            "[bold bright_yellow]🦊 Tips SEO:[/bold bright_yellow]",
+            tips_text,
+        )
+
         panel = Panel(
-            f"[bold bright_green]✅ Sesión completada[/bold bright_green]\n\n"
-            f"{metrics}\n\n"
-            f"[bold bright_yellow]🦊 Tips SEO:[/bold bright_yellow]\n{tips_text}",
+            content,
             title="[bold]Resumen miCompaWeb[/bold]",
             subtitle="[dim]Exporta tus resultados con --output[/dim]",
             border_style="green",
