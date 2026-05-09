@@ -17,6 +17,20 @@ from rich import box
 
 from micompaweb.infrastructure.config.settings import Settings
 from micompaweb.infrastructure.cache.sqlite_cache import SQLiteCache
+
+
+def _safe_async_run(coro):
+    """Ejecuta una coroutine, incluso si ya hay un event loop corriendo (ej: Typer + questionary)."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+    if loop and loop.is_running():
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(asyncio.run, coro)
+            return future.result()
+    return asyncio.run(coro)
 from micompaweb.infrastructure.adapters import (
     GooglePlacesSource,
     FixtureSource,
@@ -378,7 +392,7 @@ def _launch_m1(
             raise typer.Exit()
 
     try:
-        asyncio.run(_run_pipeline(
+        leads = _safe_async_run(_run_pipeline_core(
             settings=settings,
             project=project,
             project_path=project_path,
@@ -389,16 +403,49 @@ def _launch_m1(
         console.print(f"\n[red]Error:[/] {e}")
         raise typer.Exit(1)
 
+    # Mostrar closing screen (sync, fuera del asyncio loop)
+    from micompaweb.presentation.tui import ClosingScreen, ClosingMenu
+    cs = ClosingScreen()
+    cs.show(
+        total_leads=len(leads),
+        ultra_hot=sum(1 for l in leads if l.priority == PriorityTier.ULTRA_HOT),
+        hot=sum(1 for l in leads if l.priority == PriorityTier.HOT),
+        warm=sum(1 for l in leads if l.priority == PriorityTier.WARM),
+        revenue_total=f"${project.total_estimated_revenue_loss_low:,.0f}-${project.total_estimated_revenue_loss_high:,.0f}",
+    )
 
-async def _run_pipeline(
+    # Closing menu interactivo (sync, questionary/prompt_toolkit necesita loop propio)
+    menu = ClosingMenu(project=project, leads=leads, project_dir=project_path)
+    while True:
+        action = menu.show()
+        if action == "exit":
+            break
+        elif action == "view_leads":
+            menu.view_leads()
+        elif action == "open_html":
+            menu.open_html()
+        elif action == "export_csv":
+            menu.export_csv()
+        elif action == "email_top":
+            menu.email_top()
+        elif action == "email_batch":
+            menu.email_batch()
+        elif action == "revenue_dashboard":
+            menu.revenue_dashboard()
+        input("\nPresiona Enter para continuar...")
+
+    console.print("\n[green]✔ Session completada. Hasta la proxima! 🦊")
+
+
+async def _run_pipeline_core(
     settings: Settings,
     project: Project,
     project_path: Path,
     use_fixture: bool = False,
     offline_mode: bool = False,
-) -> None:
-    """Ejecuta el pipeline M1 con TUI Progress real."""
-    from micompaweb.presentation.tui import ProgressPanel, ClosingMenu
+) -> list[Lead]:
+    """Ejecuta el pipeline M1 async y retorna los leads."""
+    from micompaweb.presentation.tui import ProgressPanel
 
     cache_db = project_path / "cache.db"
     cache = SQLiteCache(cache_db)
@@ -466,38 +513,7 @@ async def _run_pipeline(
         progress.complete_stage("Exportacion completada")
         progress.complete_stage()
 
-    # Mostrar closing screen
-    from micompaweb.presentation.tui import ClosingScreen
-    cs = ClosingScreen()
-    cs.show(
-        total_leads=len(leads),
-        ultra_hot=sum(1 for l in leads if l.priority == PriorityTier.ULTRA_HOT),
-        hot=sum(1 for l in leads if l.priority == PriorityTier.HOT),
-        warm=sum(1 for l in leads if l.priority == PriorityTier.WARM),
-        revenue_total=f"${project.total_estimated_revenue_loss_low:,.0f}-${project.total_estimated_revenue_loss_high:,.0f}",
-    )
-
-    # Closing menu interactivo
-    menu = ClosingMenu(project=project, leads=leads, project_dir=project_path)
-    while True:
-        action = menu.show()
-        if action == "exit":
-            break
-        elif action == "view_leads":
-            menu.view_leads()
-        elif action == "open_html":
-            menu.open_html()
-        elif action == "export_csv":
-            menu.export_csv()
-        elif action == "email_top":
-            menu.email_top()
-        elif action == "email_batch":
-            menu.email_batch()
-        elif action == "revenue_dashboard":
-            menu.revenue_dashboard()
-        input("\nPresiona Enter para continuar...")
-
-    console.print("\n[green]✔ Session completada. Hasta la proxima! 🦊")
+    return leads
 
 
 # ──────────────────────────────────────────────────────────────
@@ -802,7 +818,7 @@ def export(
     try:
         # Algunos exporters son async, otros sync. Usar asyncio.run si es async.
         if asyncio.iscoroutinefunction(exporter.export):
-            result = asyncio.run(exporter.export(leads, project, export_cfg))
+            result = _safe_async_run(exporter.export(leads, project, export_cfg))
         else:
             result = exporter.export(leads, project, export_cfg)
     except Exception as e:
