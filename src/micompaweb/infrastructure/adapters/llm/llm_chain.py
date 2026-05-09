@@ -1,5 +1,6 @@
 """LLM Chain - orquesta múltiples proveedores con fallback."""
 
+import inspect
 from typing import List, Optional, Type
 
 from micompaweb.application.ports.llm_client import (
@@ -59,9 +60,11 @@ class LLMChain:
 
         for provider in self.providers:
             try:
-                # Verificar disponibilidad
+                # Verificar disponibilidad (soporta sync y async)
                 if hasattr(provider, 'is_available'):
-                    if not await provider.is_available():
+                    fn = provider.is_available
+                    available = await fn() if inspect.iscoroutinefunction(fn) else fn()
+                    if not available:
                         continue
 
                 # Intentar análisis
@@ -96,7 +99,9 @@ class LLMChain:
         for provider in self.providers:
             try:
                 if hasattr(provider, 'is_available'):
-                    if not await provider.is_available():
+                    fn = provider.is_available
+                    available = await fn() if inspect.iscoroutinefunction(fn) else fn()
+                    if not available:
                         continue
 
                 return await provider.generate_opening_angle(
